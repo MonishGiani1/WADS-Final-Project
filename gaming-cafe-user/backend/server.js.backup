@@ -1,0 +1,73 @@
+// server.js - Your Node.js backend
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Steam API Key (store this in .env file)
+const STEAM_API_KEY = process.env.STEAM_API_KEY;
+
+// Game IDs mapping (Steam AppIDs)
+const gameIds = {
+  'Counter Strike 2': 730,
+  'PUBG': 578080,
+  'Destiny 2': 1085660,
+  'Apex Legends': 1172470,
+  'Rocket League': 252950,
+  // Add other games that have Steam API support
+};
+
+// Endpoint to get player counts
+app.get('/api/player-counts', async (req, res) => {
+  try {
+    const playerCounts = {};
+    
+    // Get Steam player counts
+    for (const [game, appId] of Object.entries(gameIds)) {
+      try {
+        const response = await axios.get(`https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}&key=${STEAM_API_KEY}`);
+        if (response.data && response.data.response && response.data.response.player_count !== undefined) {
+          playerCounts[game] = response.data.response.player_count.toLocaleString();
+        }
+      } catch (error) {
+        console.error(`Error fetching player count for ${game}:`, error.message);
+        // Use fallback data if API fails
+        playerCounts[game] = "unavailable";
+      }
+    }
+    
+    // Add mock data for non-Steam games or games without API access
+    // For production, you would integrate with other APIs (Riot Games API for LoL, etc.)
+    const mockCounts = {
+      'Valorant': Math.floor(200000 + Math.random() * 50000).toLocaleString(),
+      'Fortnite': Math.floor(300000 + Math.random() * 100000).toLocaleString(),
+      'League of Legends': Math.floor(350000 + Math.random() * 50000).toLocaleString(),
+      'Minecraft': Math.floor(100000 + Math.random() * 50000).toLocaleString(),
+      'Marvel Rivals': Math.floor(100000 + Math.random() * 50000).toLocaleString(),
+      'Overwatch': Math.floor(150000 + Math.random() * 50000).toLocaleString(),
+      'Rainbow Six Siege': Math.floor(100000 + Math.random() * 25000).toLocaleString(),
+      'Call of Duty': Math.floor(200000 + Math.random() * 50000).toLocaleString(),
+      'FIFA': Math.floor(100000 + Math.random() * 50000).toLocaleString(),
+      'Battlefield': Math.floor(70000 + Math.random() * 15000).toLocaleString(),
+    };
+    
+    // Combine real and mock data
+    res.json({ ...playerCounts, ...mockCounts });
+    
+  } catch (error) {
+    console.error('Error in player counts endpoint:', error);
+    res.status(500).json({ error: 'Failed to fetch player counts' });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
