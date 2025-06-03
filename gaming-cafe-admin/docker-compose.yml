@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  backend:
+    image: idkwhatnametoput/gaming-cafe-admin-backend:latest
+    restart: always
+    environment:
+      environment:
+        PORT: 5001
+        ADMIN_PORT: 5001
+        NODE_ENV: development
+        MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@localhost:27018/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
+        JWT_SECRET: idkwhattoputheresoiwillusethis
+        ADMIN_JWT_SECRET: admin-secret-key-for-ichi-gaming-cafe-2025
+        DEFAULT_ADMIN_USERNAME: admin
+        DEFAULT_ADMIN_EMAIL: admin@ichi.com
+        DEFAULT_ADMIN_PASSWORD: admin123
+        DEFAULT_ADMIN_FULLNAME: System Administrator
+        GAMING_HOURLY_RATE: 20000
+        PREMIUM_HOURLY_RATE: 25000
+        LOW_STOCK_THRESHOLD: 5
+    ports:
+      - "3106:3106"
+
+  frontend:
+    image: idkwhatnametoput/gaming-cafe-admin-frontend:latest
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3105:3105"

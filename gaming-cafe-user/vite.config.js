@@ -2,19 +2,26 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-
-export default defineConfig({
-  plugins: [react(),tailwindcss()],
-  server: {
-    port: 5173, // This is the default Vite port
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
+  return {
+    server: {
+      proxy: {
+        "/api": {
+          target: mode === "development"
+            ? "http://localhost:5000"
+            : "https://e2425-wads-l4bcg4-server.csbihub.id",
+          changeOrigin: true,
+          secure: mode !== "development",
+          ws: true,
+        },
+      },
+    },
+    build: {
+      outDir: "dist",
+    },
+    plugins: [react(), tailwindcss()],
   }
-});
+})
 
 
