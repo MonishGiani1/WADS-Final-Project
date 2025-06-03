@@ -1461,4 +1461,15 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Admin endpoint not found' });
 });
 
+// Start the admin server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Admin backend server running on port ${PORT}`);
+  console.log(`📍 Admin Server URL: http://localhost:${PORT}`);
+  console.log(`🏥 Admin Health check: http://localhost:${PORT}/api/health`);
+  console.log(`💾 Database: ${mongoose.connection.db?.databaseName}`);
+  console.log(`🕐 Started at: ${new Date().toISOString()}`);
+});
+
+module.exports = app;
+
 module.exports = app;
