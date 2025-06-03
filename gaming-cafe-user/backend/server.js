@@ -1348,4 +1348,13 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
+// Start the server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 User backend server running on port ${PORT}`);
+  console.log(`📍 Server URL: http://localhost:${PORT}`);
+  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`💾 Database: ${mongoose.connection.db?.databaseName}`);
+  console.log(`🕐 Started at: ${new Date().toISOString()}`);
+});
+
 module.exports = app;
