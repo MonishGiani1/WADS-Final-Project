@@ -38,7 +38,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
       const totalSeconds = userQuota.totalMinutes * 60;
       const usedMinutes = Math.floor((totalSeconds - remainingSeconds) / 60);
       
-      await fetch(`http://localhost:5000/api/users/${user.id}/timer-state`, {
+      await fetch(`/api/users/${user.id}/timer-state`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -126,7 +126,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
         const token = localStorage.getItem('token');
         
         if (user.id && token) {
-          const response = await fetch(`http://localhost:5000/api/users/${user.id}/quota`, {
+          const response = await fetch(`/api/users/${user.id}/quota`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -221,7 +221,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
       const token = localStorage.getItem('token');
       
       if (user.id && token) {
-        const response = await fetch(`http://localhost:5000/api/users/${user.id}/quota`, {
+        const response = await fetch(`/api/users/${user.id}/quota`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

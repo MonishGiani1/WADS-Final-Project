@@ -53,7 +53,7 @@ export default function CheckoutPage({
   const saveOrderToDatabase = async (orderData) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export default function CheckoutPage({
   // 🔥 DATABASE INTEGRATION: Update order status
   const updateOrderStatus = async (orderId, status, paymentData = {}) => {
     try {
-      await fetch(`http://localhost:5000/api/orders/${orderId}`, {
+      await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export default function CheckoutPage({
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.id) {
-        await fetch(`http://localhost:5000/api/users/${user.id}/quota`, {
+        await fetch(`/api/users/${user.id}/quota`, {
           method: 'PATCH',
           headers: { 
             'Content-Type': 'application/json',

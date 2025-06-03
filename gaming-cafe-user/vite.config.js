@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/api": {
           target: mode === "development"
-            ? "http://localhost:5000"
+            ? ""
             : "http://backend:5000",
           changeOrigin: true,
           secure: mode !== "development",

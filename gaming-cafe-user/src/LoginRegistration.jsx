@@ -37,7 +37,7 @@ export default function LoginRegistration({ onLogin }) {
     
     try {
       // 🔥 REAL DATABASE CALL - Replace the mock code below
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export default function LoginRegistration({ onLogin }) {
     
     try {
       // 🔥 REAL DATABASE CALL - Replace the mock code below
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export default function LoginRegistration({ onLogin }) {
     if (email) {
       try {
         // 🔥 ADD FORGOT PASSWORD API CALL HERE
-        // const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        // const response = await fetch('/api/auth/forgot-password', {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },
         //   body: JSON.stringify({ email })
@@ -183,7 +183,7 @@ export default function LoginRegistration({ onLogin }) {
   const handleSocialLogin = (provider) => {
     // 🔥 ADD SOCIAL LOGIN INTEGRATION HERE
     // Redirect to OAuth provider or open popup
-    // window.location.href = `http://localhost:5000/api/auth/${provider}`;
+    // window.location.href = `/api/auth/${provider}`;
     
     // 🔥 TEMPORARY PLACEHOLDER - REMOVE AFTER OAUTH IS SETUP
     alert(`${provider} login will be available after OAuth integration.`);

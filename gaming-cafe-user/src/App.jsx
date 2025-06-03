@@ -44,7 +44,7 @@ export default function App() {
 
       const usedMinutes = Math.floor((gamingTimer - remainingSeconds) / 60);
       
-      await fetch(`http://localhost:5000/api/users/${userId}/timer-state`, {
+      await fetch(`/api/users/${userId}/timer-state`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ export default function App() {
         let shouldAutoStart = false;
 
         if (userData.id && token) {
-          const response = await fetch(`http://localhost:5000/api/users/${userData.id}/quota`, {
+          const response = await fetch(`/api/users/${userData.id}/quota`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'

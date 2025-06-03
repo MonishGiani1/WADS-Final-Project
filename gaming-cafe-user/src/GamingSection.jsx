@@ -193,7 +193,7 @@ export default function GamingSection() {
       try {
         setIsLoadingCounts(true);
         // Replace with your actual backend URL
-        const response = await fetch('http://localhost:5000/api/player-counts');
+        const response = await fetch('/api/player-counts');
         if (!response.ok) throw new Error('Failed to fetch player counts');
         
         const data = await response.json();

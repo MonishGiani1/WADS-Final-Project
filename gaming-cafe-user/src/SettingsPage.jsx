@@ -45,7 +45,7 @@ export default function SettingsPage() {
         
         if (storedUser.id && token) {
           // Fetch latest user data from database
-          const response = await fetch(`http://localhost:5000/api/users/${storedUser.id}`, {
+          const response = await fetch(`/api/users/${storedUser.id}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       console.log('Making API call to update profile:', {
         userId: storedUser.id,
         token: token ? 'exists' : 'missing',
-        url: `http://localhost:5000/api/users/${storedUser.id}`,
+        url: `/api/users/${storedUser.id}`,
         payload: {
           fullName: formData.fullName,
           email: formData.email,
@@ -172,7 +172,7 @@ export default function SettingsPage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:5000/api/users/${storedUser.id}`, {
+      const response = await fetch(`/api/users/${storedUser.id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -297,7 +297,7 @@ export default function SettingsPage() {
       
       console.log('Making API call to update password for user:', storedUser.id); // DEBUG
       
-      const response = await fetch(`http://localhost:5000/api/users/${storedUser.id}/password`, {
+      const response = await fetch(`/api/users/${storedUser.id}/password`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -351,7 +351,7 @@ export default function SettingsPage() {
         
         console.log('Attempting to delete account for user:', storedUser.id); // DEBUG
         
-        const response = await fetch(`http://localhost:5000/api/users/${storedUser.id}`, {
+        const response = await fetch(`/api/users/${storedUser.id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,

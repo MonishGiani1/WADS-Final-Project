@@ -142,7 +142,7 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
       if (game.executablePath) {
         console.log(`🎮 Attempting to launch ${game.name} via executable: ${game.executablePath}`);
         
-        const response = await fetch('http://localhost:5000/api/launch-game', {
+        const response = await fetch('/api/launch-game', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
