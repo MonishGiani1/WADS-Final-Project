@@ -1,4 +1,4 @@
-Internet Cafe System for users.
+Internet Cafe System for Admins.
 
 User Interface and Core Features made with Vite + React and custom CSS.
 
