@@ -9,7 +9,7 @@ services:
       MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@10.25.143.17:27017/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
       REFRESH_TOKEN_SECRET: gaming-cafe-user-jwt-secret-2024-change-for-production
     ports:
-      - "3106:3106"
+      - "3106:5000"
 
   frontend:
     image: idkwhatnametoput/gaming-cafe-user-frontend:latest
