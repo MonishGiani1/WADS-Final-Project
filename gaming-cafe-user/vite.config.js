@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: mode === "development"
             ? "http://localhost:5000"
-            : "https://e2425-wads-l4bcg4-server.csbihub.id",
+            : "http://backend:5000",
           changeOrigin: true,
           secure: mode !== "development",
           ws: true,
