@@ -9,8 +9,8 @@ export default defineConfig(({ mode }) => {
       proxy: {
         "/api": {
           target: mode === "development"
-            ? ""
-            : "http://backend:5000",
+            ? "http://localhost:5000"
+            : "https://e2425-wads-l4bcg4-server.csbihub.id:3106",
           changeOrigin: true,
           secure: mode !== "development",
           ws: true,
