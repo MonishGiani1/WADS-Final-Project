@@ -27,4 +27,4 @@ services:
     depends_on:
       - backend
     ports:
-      - "3107:3105"
+      - "3107:3107"
