@@ -8,7 +8,7 @@ services:
       PORT: 5001
       ADMIN_PORT: 5001
       NODE_ENV: development
-      MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@localhost:27018/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
+      MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@localhost:27017/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
       JWT_SECRET: idkwhattoputheresoiwillusethis
       ADMIN_JWT_SECRET: admin-secret-key-for-ichi-gaming-cafe-2025
       DEFAULT_ADMIN_USERNAME: admin
