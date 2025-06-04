@@ -20,8 +20,8 @@ services:
       PREMIUM_HOURLY_RATE: 25000
       LOW_STOCK_THRESHOLD: 5
     ports:
-      # CONSISTENT MAPPING: external:internal
-      - "3109:5001"
+      # Use ports that work similar to your user system
+      - "3108:5001"
     networks:
       - gaming-cafe-admin-network
 
@@ -32,8 +32,8 @@ services:
     depends_on:
       - admin-backend
     ports:
-      # CONSISTENT MAPPING: both external and internal use same port
-      - "80:3107"  # This way nginx config matches
+      # Use a port that's proven to work (like your user system range)
+      - "3107:3107"
     networks:
       - gaming-cafe-admin-network
 
