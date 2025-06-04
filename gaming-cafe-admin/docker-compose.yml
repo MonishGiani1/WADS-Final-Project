@@ -20,8 +20,7 @@ services:
       PREMIUM_HOURLY_RATE: 25000
       LOW_STOCK_THRESHOLD: 5
     ports:
-      # Use safe port range (near your working user ports)
-      - "9001:5001"
+      - "3114:5001"
     networks:
       - gaming-cafe-admin-network
 
@@ -32,8 +31,7 @@ services:
     depends_on:
       - admin-backend
     ports:
-      # Use safe port range 
-      - "9000:3107"
+      - "3113:3107"
     networks:
       - gaming-cafe-admin-network
 
