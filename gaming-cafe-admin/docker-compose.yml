@@ -21,7 +21,7 @@ services:
       LOW_STOCK_THRESHOLD: 5
     ports:
       # Use safe port range (near your working user ports)
-      - "3112:5001"
+      - "9001:5001"
     networks:
       - gaming-cafe-admin-network
 
@@ -33,7 +33,7 @@ services:
       - admin-backend
     ports:
       # Use safe port range 
-      - "3111:3107"
+      - "9000:3107"
     networks:
       - gaming-cafe-admin-network
 
