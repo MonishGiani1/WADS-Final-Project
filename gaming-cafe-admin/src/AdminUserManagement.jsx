@@ -6,15 +6,13 @@ export default function AdminUserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showUserModal, setShowUserModal] = useState(false);
-  const [modalMode, setModalMode] = useState("view"); // view, edit, create
+  const [modalMode, setModalMode] = useState("view");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Real users from MongoDB
   const [users, setUsers] = useState([]);
   const [activeSessions, setActiveSessions] = useState([]);
 
-  // Admin server configuration - same as reports
   const getAdminApiBase = () => {
     try {
       return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
@@ -24,7 +22,6 @@ export default function AdminUserManagement() {
   };
   const ADMIN_API_BASE = getAdminApiBase();
 
-  // Load users from MongoDB
   useEffect(() => {
     loadUsers();
     loadActiveSessions();
@@ -79,12 +76,10 @@ export default function AdminUserManagement() {
 
   const loadActiveSessions = async () => {
     try {
-      // This would connect to your gaming session system
-      // For now, we'll use mock data since you might not have session tracking yet
       const mockSessions = [
         {
           id: "SES-001",
-          userId: "64f1234567890123456789ab", // MongoDB ObjectId format
+          userId: "64f1234567890123456789ab",
           userName: "John Doe",
           station: "PC-05",
           game: "Valorant",
@@ -101,7 +96,6 @@ export default function AdminUserManagement() {
     }
   };
 
-  // Filter users based on search and status
   const getFilteredUsers = () => {
     return users.filter(user => {
       const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -113,18 +107,16 @@ export default function AdminUserManagement() {
     });
   };
 
-  // Get user counts by status
   const getUserCounts = () => {
     return {
       total: users.length,
       active: users.filter(u => u.isActive).length,
       inactive: users.filter(u => !u.isActive).length,
-      suspended: 0, // You can add a suspended field to your user schema
+      suspended: 0,
       online: activeSessions.length
     };
   };
 
-  // Handle user status change
   const handleStatusChange = async (userId, newStatus) => {
     const isActive = newStatus === "active";
     
@@ -160,14 +152,12 @@ export default function AdminUserManagement() {
           const result = await response.json();
           console.log('✅ User status updated successfully:', result);
           
-          // Update local state
           setUsers(prev => prev.map(user => 
             user._id === userId 
               ? { ...user, isActive }
               : user
           ));
           
-          // Update selected user if it's the one being changed
           if (selectedUser?._id === userId) {
             setSelectedUser(prev => ({
               ...prev,
@@ -190,19 +180,12 @@ export default function AdminUserManagement() {
     }
   };
 
-  // Handle ending user session
   const handleEndSession = async (sessionId) => {
     if (window.confirm("Are you sure you want to end this user's session?")) {
       setIsLoading(true);
       
       try {
-        // TODO: Implement session management API
-        // const response = await fetch(`${ADMIN_API_BASE}/api/admin/sessions/${sessionId}/end`, {
-        //   method: 'POST',
-        //   headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
-        // });
 
-        // For now, just remove from local state
         setActiveSessions(prev => prev.filter(session => session.id !== sessionId));
         alert("✅ Session ended successfully");
         
@@ -214,22 +197,12 @@ export default function AdminUserManagement() {
     }
   };
 
-  // Handle adding balance to user (you'd need to add balance field to user schema)
   const handleAddBalance = async (userId) => {
     const amount = prompt("Enter amount to add (in Rupiah):");
     if (amount && !isNaN(amount) && parseInt(amount) > 0) {
       setIsLoading(true);
       
       try {
-        // TODO: Implement balance management API
-        // const response = await fetch(`${ADMIN_API_BASE}/api/admin/users/${userId}/balance`, {
-        //   method: 'PATCH',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //     'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-        //   },
-        //   body: JSON.stringify({ amount: parseInt(amount) })
-        // });
 
         alert(`✅ Balance management feature will be implemented soon`);
         
@@ -241,7 +214,6 @@ export default function AdminUserManagement() {
     }
   };
 
-  // Format date helper
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -253,7 +225,6 @@ export default function AdminUserManagement() {
     });
   };
 
-  // Get time since registration
   const getTimeSinceRegistration = (createdDate) => {
     if (!createdDate) return 'Unknown';
     const now = new Date();
@@ -290,7 +261,6 @@ export default function AdminUserManagement() {
       marginBottom: "2rem"
     },
 
-    // Connection status indicator
     connectionStatus: {
       backgroundColor: "rgba(16, 185, 129, 0.1)",
       border: "1px solid #10B981",
@@ -304,7 +274,6 @@ export default function AdminUserManagement() {
       fontSize: "0.875rem"
     },
 
-    // Loading states
     loadingContainer: {
       display: "flex",
       justifyContent: "center",
@@ -334,7 +303,6 @@ export default function AdminUserManagement() {
       marginBottom: "1rem"
     },
 
-    // Stats Cards
     statsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
@@ -358,7 +326,6 @@ export default function AdminUserManagement() {
       color: "#9CA3AF"
     },
 
-    // Tabs
     tabsContainer: {
       display: "flex",
       gap: "0.5rem",
@@ -382,7 +349,6 @@ export default function AdminUserManagement() {
       color: "#D1D5DB"
     },
 
-    // Filters
     filtersContainer: {
       display: "flex",
       gap: "1rem",
@@ -436,7 +402,6 @@ export default function AdminUserManagement() {
       color: "white"
     },
 
-    // Table
     tableContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -518,7 +483,6 @@ export default function AdminUserManagement() {
       transition: "all 0.2s"
     },
     
-    // User Detail Modal
     modal: {
       position: "fixed",
       top: 0,
@@ -569,7 +533,6 @@ export default function AdminUserManagement() {
   const filteredUsers = getFilteredUsers();
   const userCounts = getUserCounts();
 
-  // Loading state
   if (isLoading) {
     return (
       <div style={styles.container}>
@@ -587,7 +550,6 @@ export default function AdminUserManagement() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div style={styles.container}>
@@ -609,7 +571,6 @@ export default function AdminUserManagement() {
 
   const renderUsersTab = () => (
     <>
-      {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={{...styles.statValue, color: "#3B82F6"}}>{userCounts.total}</div>
@@ -633,7 +594,6 @@ export default function AdminUserManagement() {
         </div>
       </div>
 
-      {/* Filters */}
       <div style={styles.filtersContainer}>
         <div style={styles.leftFilters}>
           <input
@@ -665,7 +625,6 @@ export default function AdminUserManagement() {
         </div>
       </div>
 
-      {/* Users Table */}
       <div style={styles.tableContainer}>
         <table style={styles.table}>
           <thead style={styles.tableHeader}>
@@ -790,7 +749,6 @@ export default function AdminUserManagement() {
 
   const renderSessionsTab = () => (
     <>
-      {/* Active Sessions Table */}
       <div style={styles.tableContainer}>
         <table style={styles.table}>
           <thead style={styles.tableHeader}>
@@ -856,14 +814,12 @@ export default function AdminUserManagement() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>User Management</h1>
         <p style={styles.subtitle}>
           Manage user accounts, active sessions, and access controls
         </p>
         
-        {/* Connection status */}
         <div style={styles.connectionStatus}>
           <p style={styles.connectionText}>
             ✅ Connected to Admin Server ({ADMIN_API_BASE})
@@ -871,7 +827,6 @@ export default function AdminUserManagement() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabsContainer}>
         <button
           style={{
@@ -893,11 +848,9 @@ export default function AdminUserManagement() {
         </button>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "users" && renderUsersTab()}
       {activeTab === "sessions" && renderSessionsTab()}
 
-      {/* User Detail Modal */}
       {selectedUser && (
         <div style={styles.modal} onClick={() => setSelectedUser(null)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>

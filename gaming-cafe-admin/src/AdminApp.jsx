@@ -7,7 +7,7 @@ import AdminInventoryManagement from './AdminInventoryManagement.jsx';
 
 export default function AdminApp() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [currentSection, setCurrentSection] = useState("reports"); // Changed default to reports
+  const [currentSection, setCurrentSection] = useState("reports");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [adminInfo, setAdminInfo] = useState({
@@ -17,7 +17,6 @@ export default function AdminApp() {
     accessLevel: "Full Access"
   });
 
-  // System stats for admin dashboard
   const [systemStats, setSystemStats] = useState({
     totalUsers: 247,
     activeUsers: 18,
@@ -27,7 +26,6 @@ export default function AdminApp() {
     pendingReports: 5
   });
 
-  // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -35,7 +33,6 @@ export default function AdminApp() {
     return () => clearInterval(timer);
   }, []);
 
-  // Admin navigation items with removed sections
   const navigationItems = [
     {
       id: "reports",
@@ -63,17 +60,14 @@ export default function AdminApp() {
     }
   ];
 
-  // Handle admin login
   const handleAdminLogin = () => {
     setIsAdminLoggedIn(true);
   };
 
-  // Show login screen if not logged in
   if (!isAdminLoggedIn) {
     return <AdminLogin onAdminLogin={handleAdminLogin} />;
   }
 
-  // Render section content
   const renderSection = () => {
     console.log('🔍 Rendering section:', currentSection);
     
@@ -121,12 +115,10 @@ export default function AdminApp() {
     }
   };
 
-  // Toggle sidebar
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Format time
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-US', { 
       hour12: false,
@@ -510,11 +502,8 @@ export default function AdminApp() {
         }
       `}</style>
 
-      {/* Enhanced Admin Sidebar */}
       <div style={styles.sidebar}>
-        {/* Header Section */}
         <div style={styles.sidebarHeader}>
-          {/* Toggle Button */}
           <button
             onClick={toggleSidebar}
             style={styles.toggleButton}
@@ -528,7 +517,6 @@ export default function AdminApp() {
             {sidebarOpen ? "←" : "→"}
           </button>
 
-          {/* Enhanced Admin Brand Logo */}
           <div style={styles.brandSection}>
             <div style={styles.brandText}>
               <div style={styles.brandTitle}>
@@ -545,10 +533,8 @@ export default function AdminApp() {
             </div>
           </div>
 
-          {/* Enhanced Admin Info Card */}
           {sidebarOpen && (
             <div style={styles.adminInfoCard}>
-              {/* Admin Profile Section */}
               <div style={styles.adminProfile}>
                 <div style={styles.adminAvatar}>
                   {adminInfo.name.charAt(0)}
@@ -559,10 +545,8 @@ export default function AdminApp() {
                 </div>
               </div>
               
-              {/* Separator Line */}
               <div style={styles.separator}></div>
               
-              {/* Enhanced Admin Stats Grid */}
               <div style={styles.statsGrid}>
                 <div style={styles.statCard}>
                   <div style={{...styles.statValue, color: "#F87171"}}>{adminInfo.lastLogin}</div>
@@ -574,7 +558,6 @@ export default function AdminApp() {
                 </div>
               </div>
 
-              {/* Quick Stats */}
               <div style={styles.quickStats}>
                 <div style={styles.alertStat}>
                   <div style={{...styles.statValue, color: "#FCD34D", fontSize: "1.125rem"}}>{systemStats.alerts}</div>
@@ -589,12 +572,9 @@ export default function AdminApp() {
           )}
         </div>
 
-        {/* Enhanced Navigation */}
         <nav style={styles.navigation}>
-          {/* Navigation Items Container */}
           <div style={styles.navSection}>
             <div style={styles.navItems}>
-              {/* Navigation section label */}
               {sidebarOpen && (
                 <div style={styles.navLabel}>
                   Admin Tools
@@ -647,12 +627,10 @@ export default function AdminApp() {
                       </div>
                     )}
 
-                    {/* Active indicator */}
                     {isActive && (
                       <div style={styles.activeIndicator}></div>
                     )}
 
-                    {/* Hover effect overlay */}
                     <div style={styles.hoverOverlay}></div>
                   </button>
                 );
@@ -660,7 +638,6 @@ export default function AdminApp() {
             </div>
           </div>
           
-          {/* Enhanced Bottom Section - LOGOUT BUTTON */}
           <div style={styles.bottomSection}>
             <button 
               onClick={(e) => {
@@ -698,9 +675,7 @@ export default function AdminApp() {
         </nav>
       </div>
 
-      {/* Main content */}
       <div style={styles.mainContent}>
-        {/* Enhanced Admin Top bar */}
         <div style={styles.topBar}>
           <div style={styles.topBarContent}>
             <h1 style={styles.pageTitle}>
@@ -712,7 +687,6 @@ export default function AdminApp() {
             </h1>
             
             <div style={styles.statusIndicators}>
-              {/* Enhanced System Status indicators */}
               <div style={styles.statusGroup}>
                 <div style={styles.onlineStatus}>
                   <div style={styles.statusDot}></div>
@@ -723,7 +697,6 @@ export default function AdminApp() {
                   {systemStats.activeUsers} Active Users
                 </div>
 
-                {/* Alert indicator */}
                 {systemStats.alerts > 0 && (
                   <div style={styles.alertBadge}>
                     {systemStats.alerts} Alerts
@@ -731,7 +704,6 @@ export default function AdminApp() {
                 )}
               </div>
               
-              {/* Current time for collapsed sidebar */}
               {!sidebarOpen && (
                 <div style={styles.statusText}>
                   {formatTime(currentTime)}
@@ -741,7 +713,6 @@ export default function AdminApp() {
           </div>
         </div>
 
-        {/* Page content */}
         <div style={styles.pageContent}>
           <div style={styles.contentWrapper}>
             {renderSection()}

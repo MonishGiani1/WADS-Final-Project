@@ -13,19 +13,17 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Debug logging for environment variables
 console.log('🔍 Environment check - MONGODB_URI exists:', !!process.env.MONGODB_URI);
 console.log('🔍 Port from env:', process.env.PORT);
+console.log('🔍 Environment:', process.env.NODE_ENV || 'development');
 
-// MongoDB connection with better logging - UPDATED for consistency and Cloudflare Tunnel support
-const mongoURL = process.env.MONGODB_URI || 'mongodb://e2425-wads-l4bcg4:ciwrot6o@localhost:27018/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4';
-console.log('🔍 Attempting to connect to MongoDB with URL:', mongoURL.replace(/:[^:@]*@/, ':***@')); // Hide password in logs
+const mongoURL = process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/gaming-cafe';
+console.log('🔍 Attempting to connect to MongoDB Atlas...');
 
-// Enhanced MongoDB connection options for production
 const mongoOptions = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 30000,
-  socketTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
   connectTimeoutMS: 30000,
   retryWrites: true,
   retryReads: true,
@@ -34,34 +32,29 @@ const mongoOptions = {
 
 mongoose.connect(mongoURL, mongoOptions)
   .then(() => {
-    console.log('Connected to MongoDB');
-    console.log('Database:', mongoose.connection.db.databaseName);
-    console.log('Connection state:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
+    console.log('✅ Connected to MongoDB Atlas');
+    console.log('📊 Database:', mongoose.connection.db.databaseName);
+    console.log('🔗 Connection state:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
   })
   .catch(err => {
-    console.error('MongoDB connection error:', err.message);
-    console.error('Connection URL:', mongoURL.replace(/:[^:@]*@/, ':***@'));
-    console.error('Full error:', err);
+    console.error('❌ MongoDB connection error:', err.message);
+    console.error('🔗 Connection URL:', mongoURL.replace(/:[^:@]*@/, ':***@'));
     
-    // Retry connection after 5 seconds
     setTimeout(() => {
       console.log('🔄 Retrying MongoDB connection...');
       mongoose.connect(mongoURL, mongoOptions);
     }, 5000);
   });
 
-
-// 1. Enhanced User Schema with gaming cafe features
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Hashed
+  password: { type: String, required: true },
   phoneNumber: { type: String },
   
-  // Gaming Cafe Specific Fields
-  gamingQuotaMinutes: { type: Number, default: 30 }, // Free 30 minutes for new users
-  sessionUsedMinutes: { type: Number, default: 0 }, // Current session usage
-  totalSpent: { type: Number, default: 0 }, // Total money spent
+  gamingQuotaMinutes: { type: Number, default: 30 },
+  sessionUsedMinutes: { type: Number, default: 0 },
+  totalSpent: { type: Number, default: 0 },
   membershipLevel: { 
     type: String, 
     enum: ['bronze', 'silver', 'gold', 'platinum'], 
@@ -69,35 +62,29 @@ const userSchema = new mongoose.Schema({
   },
   loyaltyPoints: { type: Number, default: 0 },
   
-  // Account Status
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   lastLogin: Date,
-  currentStation: { type: String }, // PC station number if currently gaming
+  currentStation: { type: String },
   
-  // Preferences
   preferences: {
     notifications: { type: Boolean, default: true },
     newsletter: { type: Boolean, default: false },
     favoriteGames: [String],
-    dietaryRestrictions: [String] // For food orders
+    dietaryRestrictions: [String]
   },
   
-  // Timestamps
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now }
 });
 
-// 2. Reports Schema - For user issue reporting
 const reportSchema = new mongoose.Schema({
-  id: { type: String, unique: true, required: true }, // Custom report ID
+  id: { type: String, unique: true, required: true },
   
-  // User Information
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   userName: { type: String, required: true },
   userEmail: { type: String, required: true },
   
-  // Report Details
   category: { 
     type: String, 
     required: true,
@@ -110,29 +97,24 @@ const reportSchema = new mongoose.Schema({
   },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  station: { type: String }, // Gaming station number
+  station: { type: String },
   
-  // Status Management
   status: { 
     type: String, 
     enum: ['pending', 'investigating', 'resolved', 'escalated', 'closed'],
     default: 'pending'
   },
   
-  // Admin Response
   response: { type: String },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
   resolvedAt: Date,
   
-  // Attachments (file paths/URLs)
   attachments: [String],
   
-  // Timestamps
   submittedAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
-// 3. Menu Items Schema - For food and beverages
 const menuItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -143,13 +125,11 @@ const menuItemSchema = new mongoose.Schema({
     enum: ['snacks', 'meals', 'drinks', 'desserts', 'specials']
   },
   
-  // Inventory Management
   stock: { type: Number, required: true, default: 0 },
   lowStockThreshold: { type: Number, default: 5 },
   isAvailable: { type: Boolean, default: true },
   
-  // Item Details
-  image: { type: String }, // Emoji or image URL
+  image: { type: String },
   ingredients: [String],
   allergens: [String],
   nutritionalInfo: {
@@ -159,38 +139,32 @@ const menuItemSchema = new mongoose.Schema({
     fat: Number
   },
   
-  // Timing
-  preparationTime: { type: Number }, // Minutes
+  preparationTime: { type: Number },
   isSpicy: { type: Boolean, default: false },
   isVegetarian: { type: Boolean, default: false },
   isVegan: { type: Boolean, default: false },
   
-  // Admin fields
-  cost: { type: Number }, // Cost price for admin
+  cost: { type: Number },
   popularityScore: { type: Number, default: 0 },
   
-  // Timestamps
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now }
 });
 
-// 4. Orders Schema - For food orders and gaming time purchases
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, unique: true, required: true },
   
-  // Customer Information
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   customerName: { type: String, required: true },
   customerEmail: { type: String, required: true },
   customerPhone: { type: String },
   
-  // Order Details
   items: [{
     itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' },
     name: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true },
-    minutes: { type: Number }, // For gaming time purchases
+    minutes: { type: Number },
     description: String
   }],
   
@@ -201,14 +175,12 @@ const orderSchema = new mongoose.Schema({
     required: true 
   },
   
-  // Order Status
   orderStatus: { 
     type: String, 
     enum: ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'],
     default: 'pending'
   },
   
-  // Payment Information
   paymentMethod: { 
     type: String, 
     enum: ['credit-card', 'qris', 'cash'], 
@@ -220,62 +192,50 @@ const orderSchema = new mongoose.Schema({
     default: 'pending'
   },
   
-  // Payment Integration IDs
   stripePaymentIntentId: String,
   qrisTransactionId: String,
   qrisPaidAmount: Number,
   qrisPaidAt: Date,
   
-  // Station and Delivery
-  deliveryStation: String, // Gaming station for delivery
+  deliveryStation: String,
   specialInstructions: String,
   
-  // Timestamps
   orderedAt: { type: Date, default: Date.now },
   paidAt: Date,
   completedAt: Date,
   failureReason: String
 });
 
-// 5. Gaming Sessions Schema - Track user gaming time
 const gamingSessionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   stationNumber: { type: String, required: true },
   
-  // Session Details
   startTime: { type: Date, default: Date.now },
   endTime: Date,
   totalMinutes: { type: Number, default: 0 },
   
-  // Session Status
   status: { 
     type: String, 
     enum: ['active', 'paused', 'completed', 'terminated'],
     default: 'active'
   },
   
-  // Cost and Payment
-  hourlyRate: { type: Number, default: 20000 }, // Rate at time of session
+  hourlyRate: { type: Number, default: 20000 },
   totalCost: { type: Number, default: 0 },
   paymentMethod: String,
   
-  // Games Played (optional tracking)
   gamesPlayed: [String],
   
-  // Notes
   notes: String,
   terminationReason: String,
   
-  // Timestamps
   created: { type: Date, default: Date.now }
 });
 
-// 6. Gaming Stations Schema - Track station availability
 const gamingStationSchema = new mongoose.Schema({
   stationNumber: { type: String, required: true, unique: true },
   stationName: { type: String, required: true },
   
-  // Hardware Specs
   specs: {
     cpu: String,
     gpu: String,
@@ -285,48 +245,39 @@ const gamingStationSchema = new mongoose.Schema({
     peripherals: [String]
   },
   
-  // Status
   status: { 
     type: String, 
     enum: ['available', 'occupied', 'maintenance', 'out-of-order'],
     default: 'available'
   },
   
-  // Current User
   currentUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   currentSessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'GamingSession' },
   
-  // Pricing
   hourlyRate: { type: Number, default: 20000 },
   isPremium: { type: Boolean, default: false },
   
-  // Maintenance
   lastMaintenance: Date,
   maintenanceNotes: String,
   
-  // Location in cafe
   zone: { type: String, enum: ['standard', 'vip', 'tournament'], default: 'standard' },
   
-  // Timestamps
   created: { type: Date, default: Date.now },
   updated: { type: Date, default: Date.now }
 });
 
-// 7. Admin Users Schema - For admin panel access
 const adminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Hashed
+  password: { type: String, required: true },
   fullName: { type: String, required: true },
   
-  // Admin Role
   role: { 
     type: String, 
     enum: ['super-admin', 'manager', 'staff', 'tech-support'],
     default: 'staff'
   },
   
-  // Permissions
   permissions: {
     manageUsers: { type: Boolean, default: false },
     manageStations: { type: Boolean, default: false },
@@ -337,15 +288,12 @@ const adminSchema = new mongoose.Schema({
     systemSettings: { type: Boolean, default: false }
   },
   
-  // Status
   isActive: { type: Boolean, default: true },
   lastLogin: Date,
   
-  // Timestamps
   created: { type: Date, default: Date.now }
 });
 
-// 8. System Settings Schema - For cafe configuration
 const systemSettingsSchema = new mongoose.Schema({
   settingKey: { type: String, required: true, unique: true },
   settingValue: mongoose.Schema.Types.Mixed,
@@ -359,7 +307,6 @@ const systemSettingsSchema = new mongoose.Schema({
   updated: { type: Date, default: Date.now }
 });
 
-// Existing payment schemas
 const paymentSchema = new mongoose.Schema({
   paymentId: { type: String, required: true, unique: true },
   amount: Number,
@@ -400,20 +347,15 @@ app.use(cors({
     'http://localhost:3000', 
     'http://localhost:5173', 
     'http://localhost:5174',
-    'https://yourdomain.com',           
-    'https://www.yourdomain.com',       
-    'https://admin.yourdomain.com',     
-    'https://api.yourdomain.com'        
+    process.env.FRONTEND_URL,
+    process.env.RAILWAY_STATIC_URL,
+    /\.railway\.app$/
   ], 
   credentials: true
 }));
+
 app.use(express.json());
 
-// In-memory storage for demo purposes (keeping some for compatibility)
-const paymentStorage = new Map();
-const qrisStorage = new Map();
-
-// Authentication middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -431,14 +373,12 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Register endpoint
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { fullName, email, password, phoneNumber } = req.body;
     
     console.log('Registration attempt:', { fullName, email, phoneNumber });
     
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ 
@@ -447,18 +387,16 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
     
-    // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
-    // Create new user
     const newUser = new User({
       fullName,
       email,
       password: hashedPassword,
       phoneNumber,
-      gamingQuotaMinutes: 30, // Welcome bonus
-      loyaltyPoints: 100 // Welcome bonus
+      gamingQuotaMinutes: 30,
+      loyaltyPoints: 100
     });
     
     await newUser.save();
@@ -484,14 +422,12 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
     console.log('Login attempt:', email);
     
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ 
@@ -500,7 +436,6 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
     
-    // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(400).json({ 
@@ -509,11 +444,9 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
     
-    // Update last login
     user.lastLogin = new Date();
     await user.save();
     
-    // Create JWT token (optional for session management)
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -662,7 +595,6 @@ app.patch('/api/orders/:orderId', async (req, res) => {
   }
 });
 
-
 app.get('/api/users/:userId/quota', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -687,7 +619,6 @@ app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
     
     let updateQuery;
     if (action === 'add') {
-      // Adding quota - increment the total, keep session usage, ADD TO TOTAL SPENT
       updateQuery = { 
         $inc: { 
           gamingQuotaMinutes: quotaMinutes,
@@ -696,7 +627,6 @@ app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
         $set: { updated: new Date() }
       };
     } else if (action === 'reset') {
-      // Reset session - keep total quota, reset session usage
       updateQuery = { 
         $set: { 
           sessionUsedMinutes: 0,
@@ -705,7 +635,6 @@ app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
         }
       };
     } else {
-      // Set quota - replace total quota, optionally reset session
       updateQuery = { 
         $set: { 
           gamingQuotaMinutes: quotaMinutes,
@@ -727,16 +656,7 @@ app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
     
-    // Calculate remaining time
     const remainingMinutes = Math.max(0, user.gamingQuotaMinutes - user.sessionUsedMinutes);
-    
-    console.log('Quota updated:', {
-      total: user.gamingQuotaMinutes,
-      used: user.sessionUsedMinutes,
-      remaining: remainingMinutes,
-      totalSpent: user.totalSpent,
-      action: action
-    });
     
     res.json({ 
       success: true, 
@@ -826,7 +746,6 @@ app.delete('/api/users/:userId', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
     
-    // Also delete related data
     await Report.deleteMany({ userId: req.params.userId });
     await Order.deleteMany({ userId: req.params.userId });
     await GamingSession.deleteMany({ userId: req.params.userId });
@@ -838,7 +757,6 @@ app.delete('/api/users/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-// Mock player counts (since I don't have proper key)
 const getMockPlayerCounts = () => ({
   'Counter Strike 2': (894000 + Math.floor(Math.random() * 10000)).toLocaleString(),
   'Valorant': (247000 + Math.floor(Math.random() * 50000)).toLocaleString(),
@@ -857,35 +775,27 @@ const getMockPlayerCounts = () => ({
   'Battlefield': (76000 + Math.floor(Math.random() * 8000)).toLocaleString(),
 });
 
-// Endpoint to get player counts
 app.get('/api/player-counts', async (req, res) => {
   try {
     console.log('Fetching player counts...');
-    
-    // For now, use mock data
     const playerCounts = getMockPlayerCounts();
-    
     console.log('Player counts fetched successfully');
     res.json(playerCounts);
-    
   } catch (error) {
     console.error('Error in player counts endpoint:', error);
     res.status(500).json({ error: 'Failed to fetch player counts' });
   }
 });
 
-// Create a payment intent endpoint (mock version)
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
     const { amount, currency = 'idr', description, metadata } = req.body;
     
     console.log('Creating payment intent:', { amount, currency, description });
     
-    // Mock payment intent
     const paymentIntentId = `pi_mock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const clientSecret = `${paymentIntentId}_secret_mock`;
     
-    // Store payment intent in MongoDB
     const payment = new Payment({
       paymentId: paymentIntentId,
       amount,
@@ -896,7 +806,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
     });
     
     await payment.save();
-    console.log('Payment intent created and saved to DB:', paymentIntentId);
+    console.log('Payment intent created and saved:', paymentIntentId);
     
     res.json({
       clientSecret,
@@ -910,7 +820,6 @@ app.post('/api/create-payment-intent', async (req, res) => {
   }
 });
 
-// Payment verification endpoint (mock version)
 app.get('/api/verify-payment/:paymentId', async (req, res) => {
   try {
     const paymentId = req.params.paymentId;
@@ -922,12 +831,11 @@ app.get('/api/verify-payment/:paymentId', async (req, res) => {
       return res.status(404).json({ error: 'Payment not found' });
     }
     
-    // Simulate successful payment
     payment.status = 'succeeded';
     await payment.save();
     
     res.json({
-      status: 'succeeded', // Always succeed for demo
+      status: 'succeeded',
       amount: payment.amount,
       currency: payment.currency,
       metadata: payment.metadata
@@ -939,17 +847,13 @@ app.get('/api/verify-payment/:paymentId', async (req, res) => {
   }
 });
 
-// Create a QRIS payment endpoint (mock version)
 app.post('/api/create-qris-payment', async (req, res) => {
   try {
     const { amount, orderId, customerName, expiryMinutes = 15 } = req.body;
     
     console.log('Creating QRIS payment:', { amount, orderId, customerName });
     
-    // Generate transaction ID
     const transactionId = `qris_mock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    
-    // Create mock QR code
     const mockQrString = `https://mock-qris.example.com/pay?amount=${amount}&tx=${transactionId}&order=${orderId}`;
     
     try {
@@ -964,7 +868,6 @@ app.post('/api/create-qris-payment', async (req, res) => {
       
       const expiryTime = new Date(Date.now() + expiryMinutes * 60000);
       
-      // Store QRIS payment data in MongoDB
       const qrisPayment = new QrisPayment({
         transactionId,
         orderId,
@@ -977,7 +880,7 @@ app.post('/api/create-qris-payment', async (req, res) => {
       });
       
       await qrisPayment.save();
-      console.log('QRIS payment created and saved to DB:', transactionId);
+      console.log('QRIS payment created:', transactionId);
       
       res.json({
         success: true,
@@ -1000,7 +903,6 @@ app.post('/api/create-qris-payment', async (req, res) => {
   }
 });
 
-// Check QRIS payment status endpoint (mock version)
 app.get('/api/check-qris-status/:transactionId', async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
@@ -1012,7 +914,6 @@ app.get('/api/check-qris-status/:transactionId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Transaction not found' });
     }
     
-    // Check if expired
     const now = new Date();
     const expiry = new Date(qrisPayment.expiryTime);
     
@@ -1021,7 +922,6 @@ app.get('/api/check-qris-status/:transactionId', async (req, res) => {
       await qrisPayment.save();
     }
     
-    // Simulate random payment completion for demo (30% chance each check)
     if (qrisPayment.status === 'PENDING' && Math.random() < 0.3) {
       qrisPayment.status = 'COMPLETED';
       qrisPayment.paidAt = new Date();
@@ -1044,7 +944,6 @@ app.get('/api/check-qris-status/:transactionId', async (req, res) => {
   }
 });
 
-// Manually complete QRIS payment 
 app.post('/api/complete-qris/:transactionId', async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
@@ -1068,96 +967,73 @@ app.post('/api/complete-qris/:transactionId', async (req, res) => {
   }
 });
 
-// Launch game executable
 app.post('/api/launch-game', async (req, res) => {
   try {
     const { gameName, executablePath } = req.body;
     
-    console.log(`🎮 Attempting to launch ${gameName} at: ${executablePath}`);
+    console.log(`Game launch requested: ${gameName} at ${executablePath}`);
     
-    // Check if executable exists
-    if (!fs.existsSync(executablePath)) {
-      console.error(`❌ Game executable not found: ${executablePath}`);
-      return res.status(404).json({
-        success: false,
-        error: 'Game executable not found',
-        message: `Could not find ${gameName} at ${executablePath}. Please check if the game is installed.`
-      });
-    }
-    
-    try {
-      const gameProcess = spawn(executablePath, [], {
-        detached: true,
-        stdio: 'ignore'
-      });
-      
-      // Don't wait for the game to close
-      gameProcess.unref();
-      
-      console.log(`✅ ${gameName} launched successfully with PID: ${gameProcess.pid}`);
-      
-      return res.json({
-        success: true,
-        message: `${gameName} launched successfully`,
-        pid: gameProcess.pid,
-        method: 'spawn'
-      });
-      
-    } catch (spawnError) {
-      console.warn(`Spawn failed for ${gameName}, trying alternative method:`, spawnError.message);
-      
-      exec(`start "" "${executablePath}"`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`System command launch failed for ${gameName}:`, error);
-          return res.status(500).json({
-            success: false,
-            error: 'Failed to launch game',
-            message: `Could not launch ${gameName}: ${error.message}`
-          });
-        }
-        
-        console.log(`${gameName} launched via system command`);
-        res.json({
-          success: true,
-          message: `${gameName} launched successfully`,
-          method: 'system_command'
-        });
-      });
-    }
+    res.json({
+      success: false,
+      message: 'Game launching is not available on cloud deployment',
+      note: 'This feature only works on local gaming stations'
+    });
     
   } catch (error) {
-    console.error(`Game launch error for ${req.body.gameName}:`, error);
+    console.error('Game launch error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to launch game',
-      message: error.message
+      error: 'Game launch not supported in cloud environment'
     });
   }
 });
 
-// Get list of running game processes 
 app.get('/api/running-games', (req, res) => {
+  res.json({ 
+    runningGames: [],
+    message: 'Running games detection not available on cloud deployment'
+  });
+});
+
+
+app.post('/api/ai/gemini', authenticateToken, async (req, res) => {
   try {
-    exec('tasklist /fo csv | findstr /i "game\\|steam\\|epic\\|origin\\|battle"', (error, stdout, stderr) => {
-      if (error) {
-        return res.json({ runningGames: [] });
-      }
-      
-      const processes = stdout.split('\n')
-        .filter(line => line.trim())
-        .map(line => {
-          const [name, pid] = line.split(',').map(item => item.replace(/"/g, ''));
-          return { name, pid };
-        });
-      
-      res.json({ runningGames: processes });
+    const { message, userContext } = req.body;
+    
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyAk96MP_EEVdCniXHQNM65rQ5Y1eBKQ2pk';
+    
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `You are ICHI Gaming Cafe's AI assistant. The user is ${userContext.name} at ${userContext.station} with ${userContext.remainingTime} gaming time left and ${userContext.balance} balance. User asked: "${message}" Respond helpfully about gaming, cafe services, food recommendations, or technical support. Keep responses concise and friendly with gaming cafe context.`
+          }]
+        }]
+      })
     });
+
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates[0]) {
+      const aiResponse = data.candidates[0].content.parts[0].text;
+      res.json({ success: true, response: aiResponse });
+    } else {
+      throw new Error('No response from Gemini');
+    }
+    
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get running games' });
+    console.error('Gemini API error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'AI service temporarily unavailable' 
+    });
   }
 });
 
-// Function to seed default menu items
 async function seedDefaultMenuItems() {
   try {
     const count = await MenuItem.countDocuments();
@@ -1180,19 +1056,18 @@ async function seedDefaultMenuItems() {
       ];
       
       await MenuItem.insertMany(defaultMenuItems);
-      console.log('Default menu items seeded successfully');
+      console.log('✅ Default menu items seeded successfully');
     }
   } catch (error) {
-    console.error('Error seeding menu items:', error);
+    console.error('❌ Error seeding menu items:', error);
   }
 }
 
-// Function to seed default gaming stations
 async function seedDefaultGamingStations() {
   try {
     const count = await GamingStation.countDocuments();
     if (count === 0) {
-      console.log('Seeding default gaming stations...');
+      console.log('🎮 Seeding default gaming stations...');
       
       const defaultStations = [];
       for (let i = 1; i <= 20; i++) {
@@ -1215,25 +1090,24 @@ async function seedDefaultGamingStations() {
       }
       
       await GamingStation.insertMany(defaultStations);
-      console.log('Default gaming stations seeded successfully');
+      console.log('✅ Default gaming stations seeded successfully');
     }
   } catch (error) {
-    console.error('Error seeding gaming stations:', error);
+    console.error('❌ Error seeding gaming stations:', error);
   }
 }
 
-// Function to create default admin user
 async function createDefaultAdmin() {
   try {
     const count = await Admin.countDocuments();
     if (count === 0) {
-      console.log('Creating default admin user...');
+      console.log('👤 Creating default admin user...');
       
       const hashedPassword = await bcrypt.hash('admin123', 10);
       
       const defaultAdmin = new Admin({
         username: 'admin',
-        email: 'admin@ichi.com',
+        email: 'admin@gamingcafe.com',
         password: hashedPassword,
         fullName: 'System Administrator',
         role: 'super-admin',
@@ -1249,28 +1123,24 @@ async function createDefaultAdmin() {
       });
       
       await defaultAdmin.save();
-      console.log('Default admin created - Username: admin, Password: admin123');
+      console.log('✅ Default admin created - Username: admin, Password: admin123');
     }
   } catch (error) {
-    console.error('Error creating default admin:', error);
+    console.error('❌ Error creating default admin:', error);
   }
 }
 
-// Initialize database with default data
 async function initializeDatabase() {
   await seedDefaultMenuItems();
   await seedDefaultGamingStations();
   await createDefaultAdmin();
 }
 
-// Run initialization after MongoDB connection
 mongoose.connection.once('open', async () => {
-  console.log('Database connected, initializing default data...');
+  console.log('📊 Database connected, initializing default data...');
   await initializeDatabase();
 });
 
-
-// Enhanced health check endpoint
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
   const stateMap = {
@@ -1282,79 +1152,33 @@ app.get('/api/health', (req, res) => {
   
   res.json({ 
     status: 'ok',
-    server: 'user-server', 
+    server: 'gaming-cafe-user-server', 
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production',
     database: {
       state: stateMap[dbState] || 'unknown',
-      name: mongoose.connection.db?.databaseName || 'unknown',
-      host: mongoose.connection.host || 'unknown',
-      port: mongoose.connection.port || 'unknown'
+      name: mongoose.connection.db?.databaseName || 'unknown'
     },
-    tunnel: {
-      enabled: process.env.MONGODB_URI?.includes('db.') ? true : false,
-      url: process.env.MONGODB_URI?.replace(/:[^:@]*@/, ':***@') || 'not set'
-    },
-    environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime(),
-    endpoints: {
-      auth: {
-        register: '/api/auth/register (POST)',
-        login: '/api/auth/login (POST)'
-      },
-      reports: {
-        submit: '/api/reports (POST)',
-        getUserReports: '/api/reports/user/:email (GET)'
-      },
-      menu: {
-        getItems: '/api/menu-items (GET)',
-        updateStock: '/api/menu-items/update-stock (PATCH)'
-      },
-      orders: {
-        create: '/api/orders (POST)',
-        update: '/api/orders/:orderId (PATCH)'
-      },
-      users: {
-        getProfile: '/api/users/:userId (GET)',
-        updateProfile: '/api/users/:userId (PATCH)',
-        updatePassword: '/api/users/:userId/password (PATCH)',
-        deleteAccount: '/api/users/:userId (DELETE)',
-        getQuota: '/api/users/:userId/quota (GET)',
-        updateQuota: '/api/users/:userId/quota (PATCH)'
-      },
-      games: {
-        playerCounts: '/api/player-counts (GET)',
-        launchGame: '/api/launch-game (POST)',
-        runningGames: '/api/running-games (GET)'
-      },
-      payments: {
-        createPayment: '/api/create-payment-intent (POST)',
-        verifyPayment: '/api/verify-payment/:paymentId (GET)',
-        createQris: '/api/create-qris-payment (POST)',
-        checkQris: '/api/check-qris-status/:transactionId (GET)',
-        completeQris: '/api/complete-qris/:transactionId (POST)'
-      }
-    }
+    version: '2.0.0'
   });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
+  console.error('❌ Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Start the server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 User backend server running on port ${PORT}`);
+  console.log(`🚀 Gaming Cafe User Server running on port ${PORT}`);
   console.log(`📍 Server URL: http://localhost:${PORT}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`💾 Database: ${mongoose.connection.db?.databaseName}`);
   console.log(`🕐 Started at: ${new Date().toISOString()}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
 });
 
 module.exports = app;

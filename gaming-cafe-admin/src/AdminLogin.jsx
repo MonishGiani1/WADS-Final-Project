@@ -2,8 +2,8 @@ import { useState } from "react";
 
 export default function AdminLogin({ onAdminLogin }) {
   const [loginForm, setLoginForm] = useState({ 
-    username: "admin", // Pre-filled for demo
-    password: "admin123" // Pre-filled for demo
+    username: "", 
+    password: ""
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -14,7 +14,6 @@ export default function AdminLogin({ onAdminLogin }) {
     setIsLoading(true);
     setErrors({});
     
-    // Validate admin login form
     const newErrors = {};
     if (!loginForm.username) newErrors.username = "Username is required";
     if (!loginForm.password) newErrors.password = "Password is required";
@@ -28,7 +27,6 @@ export default function AdminLogin({ onAdminLogin }) {
     try {
       console.log('🛡️ Attempting admin login with backend...');
       
-      // Call your real admin login endpoint on port 5001
       const response = await fetch('http://localhost:5001/api/admin/auth/login', {
         method: 'POST',
         headers: {
@@ -44,14 +42,12 @@ export default function AdminLogin({ onAdminLogin }) {
       console.log('Admin login response:', data);
 
       if (data.success) {
-        // Store admin token and info in localStorage
         localStorage.setItem('adminToken', data.token);
         localStorage.setItem('adminInfo', JSON.stringify(data.admin));
         
         console.log('✅ Admin login successful');
         alert(`✅ Welcome ${data.admin.fullName}! Admin login successful.`);
         
-        // Call parent onAdminLogin function
         if (onAdminLogin) {
           onAdminLogin(data.admin);
         }
@@ -73,44 +69,11 @@ export default function AdminLogin({ onAdminLogin }) {
     const { name, value } = e.target;
     setLoginForm({...loginForm, [name]: value});
     
-    // Clear errors when user starts typing
     if (errors[name]) {
       setErrors({...errors, [name]: null});
     }
     if (errors.general) {
       setErrors({...errors, general: null});
-    }
-  };
-
-  // Function to setup admin account if needed
-  const setupAdminAccount = async () => {
-    try {
-      console.log('🔧 Setting up admin account...');
-      
-      const response = await fetch('http://localhost:5001/api/admin/setup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: 'admin',
-          email: 'admin@ichi.com',
-          password: 'admin123',
-          fullName: 'System Administrator'
-        })
-      });
-
-      const data = await response.json();
-      console.log('Admin setup response:', data);
-
-      if (data.success) {
-        alert('✅ Admin account created successfully! You can now login.');
-      } else {
-        alert(`ℹ️ ${data.error}`);
-      }
-    } catch (error) {
-      console.error('❌ Admin setup error:', error);
-      alert('❌ Failed to setup admin account. Please check if the server is running.');
     }
   };
 
@@ -260,39 +223,11 @@ export default function AdminLogin({ onAdminLogin }) {
       color: "#F59E0B",
       fontSize: "0.75rem",
       fontWeight: "500"
-    },
-    demoCredentials: {
-      marginTop: "1rem",
-      padding: "0.75rem",
-      backgroundColor: "rgba(59, 130, 246, 0.1)",
-      border: "1px solid rgba(59, 130, 246, 0.3)",
-      borderRadius: "0.5rem",
-      fontSize: "0.6875rem",
-      color: "#93C5FD"
-    },
-    demoTitle: {
-      fontWeight: "600",
-      marginBottom: "0.25rem",
-      color: "#60A5FA"
-    },
-    setupButton: {
-      width: "100%",
-      padding: "0.75rem",
-      backgroundColor: "#3B82F6",
-      color: "white",
-      border: "none",
-      borderRadius: "0.5rem",
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      cursor: "pointer",
-      marginTop: "0.5rem",
-      transition: "all 0.2s ease"
     }
   };
 
   return (
     <div style={styles.container}>
-      {/* Admin login form */}
       <div style={styles.formContainer}>
         <div style={styles.formHeader}>
           <h1 style={styles.formTitle}>ICHI ADMIN</h1>
@@ -373,25 +308,6 @@ export default function AdminLogin({ onAdminLogin }) {
           <div style={styles.securityText}>
             This is a secure admin area. All access is logged and monitored.
           </div>
-        </div>
-
-        {/* Demo credentials for testing */}
-        <div style={styles.demoCredentials}>
-          <div style={styles.demoTitle}>Demo Credentials:</div>
-          <div>Username: admin</div>
-          <div>Password: admin123</div>
-          <div style={{marginTop: '0.5rem', fontSize: '0.65rem', color: '#93C5FD'}}>
-            ⚠️ If login fails, click "Setup Admin" below first
-          </div>
-          
-          <button
-            onClick={setupAdminAccount}
-            style={styles.setupButton}
-            onMouseOver={(e) => e.target.style.backgroundColor = "#2563EB"}
-            onMouseOut={(e) => e.target.style.backgroundColor = "#3B82F6"}
-          >
-            🔧 Setup Admin Account
-          </button>
         </div>
       </div>
 

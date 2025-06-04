@@ -3,6 +3,7 @@ import GamingSection from './GamingSection.jsx';
 import QuotaPage from './QuotaPage.jsx';
 import LoginRegistration from './LoginRegistration.jsx';
 import FoodPage from './FoodPage.jsx';
+import AIAssistantPage from './AIAssistantPage.jsx';
 import SettingsPage from './SettingsPage.jsx';
 import ReportsPage from './ReportsPage.jsx';
 
@@ -17,10 +18,9 @@ export default function App() {
     remainingTime: "0m",
     balance: "Rp 0"
   });
-  const [gamingTimer, setGamingTimer] = useState(null); // For countdown timer
-  const [isGaming, setIsGaming] = useState(false); // Gaming session state
+  const [gamingTimer, setGamingTimer] = useState(null);
+  const [isGaming, setIsGaming] = useState(false);
 
-  // Helper function to format gaming time
   const formatGamingTime = (minutes) => {
     if (!minutes || minutes === 0) return "0m";
     if (minutes < 60) {
@@ -31,12 +31,10 @@ export default function App() {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
-  // Helper function to format balance
   const formatBalance = (amount) => {
     return `Rp ${Number(amount || 0).toLocaleString('id-ID')}`;
   };
 
-  // 🔥 NEW: Function to save timer state to database
   const saveTimerState = async (userId, remainingSeconds) => {
     try {
       const token = localStorage.getItem('token');
@@ -60,7 +58,6 @@ export default function App() {
     }
   };
 
-  // Update time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -68,7 +65,6 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // 🔥 UPDATED: Gaming countdown timer with database persistence
   useEffect(() => {
     let countdownTimer;
     
@@ -77,22 +73,18 @@ export default function App() {
         setGamingTimer(prev => {
           const newTime = prev - 1;
           
-          // Update displayed time
           setUserInfo(prevInfo => ({
             ...prevInfo,
             remainingTime: formatGamingTime(Math.floor(newTime / 60))
           }));
           
-          // 🔥 SECURITY FIX: Save to database every 10 seconds
           const user = JSON.parse(localStorage.getItem('user') || '{}');
           if (user.id && newTime % 10 === 0) {
             saveTimerState(user.id, newTime);
           }
           
-          // Stop gaming when time reaches 0
           if (newTime <= 0) {
             setIsGaming(false);
-            // Final save when timer expires
             if (user.id) {
               saveTimerState(user.id, 0);
             }
@@ -102,7 +94,7 @@ export default function App() {
           
           return newTime;
         });
-      }, 1000); // Update every second
+      }, 1000);
     }
     
     return () => {
@@ -112,7 +104,6 @@ export default function App() {
     };
   }, [isGaming, gamingTimer]);
 
-  // 🔥 UPDATED: Save timer state when user leaves the page
   useEffect(() => {
     const handleBeforeUnload = async () => {
       if (isGaming && gamingTimer > 0) {
@@ -127,7 +118,6 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isGaming, gamingTimer]);
 
-  // Check for existing user on app load
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
@@ -145,7 +135,6 @@ export default function App() {
     }
   }, []);
 
-  // Navigation items with enhanced properties
   const navigationItems = [
     {
       id: "gaming",
@@ -165,6 +154,14 @@ export default function App() {
       icon: "💳",
       description: "Add gaming time & balance"
     },
+
+    {
+    id: "ai-assistant",
+    label: "AI Assistant", 
+    icon: "🤖",
+    description: "Smart gaming helper & chat"
+    },
+
     {
       id: "reports",
       label: "Reports",
@@ -179,15 +176,12 @@ export default function App() {
     }
   ];
 
-  // 🔥 UPDATED: Function to handle successful login with timer restoration
   const handleLogin = async (userData) => {
     console.log('handleLogin called with:', userData);
     setIsLoggedIn(true);
     
-    // Update userInfo with real data from login
     if (userData) {
       try {
-        // 🔥 SECURITY FIX: Fetch current timer state from database
         const token = localStorage.getItem('token');
         let actualRemainingMinutes = userData.gamingQuotaMinutes || 0;
         let shouldAutoStart = false;
@@ -202,7 +196,6 @@ export default function App() {
           
           if (response.ok) {
             const quotaData = await response.json();
-            // Calculate actual remaining time based on used minutes
             actualRemainingMinutes = Math.max(0, 
               (quotaData.gamingQuotaMinutes || 0) - (quotaData.sessionUsedMinutes || 0)
             );
@@ -219,7 +212,7 @@ export default function App() {
 
         const updatedUserInfo = {
           name: userData.fullName || "User",
-          station: "PC-05", // Could be dynamically assigned later
+          station: "PC-05",
           remainingTime: formatGamingTime(actualRemainingMinutes),
           balance: formatBalance(userData.totalSpent || 0)
         };
@@ -227,11 +220,9 @@ export default function App() {
         console.log('Setting userInfo to:', updatedUserInfo);
         setUserInfo(updatedUserInfo);
         
-        // 🔥 SECURITY FIX: Set timer to actual remaining time, not full quota
         const remainingSeconds = actualRemainingMinutes * 60;
         setGamingTimer(remainingSeconds);
         
-        // 🔥 AUTO-START GAMING: Only if there's actual time remaining
         if (shouldAutoStart) {
           setIsGaming(true);
           console.log('🎮 Auto-starting gaming session with', actualRemainingMinutes, 'minutes remaining');
@@ -240,7 +231,6 @@ export default function App() {
         }
       } catch (error) {
         console.error('Error fetching timer state during login:', error);
-        // Fallback to userData values
         const gamingMinutes = userData.gamingQuotaMinutes || 0;
         setUserInfo({
           name: userData.fullName || "User",
@@ -256,7 +246,6 @@ export default function App() {
     }
   };
 
-  // Function to start/stop gaming session
   const toggleGamingSession = () => {
     if (gamingTimer <= 0) {
       alert("❌ No gaming time remaining! Please purchase more time.");
@@ -269,7 +258,6 @@ export default function App() {
       alert("🎮 Gaming session started! Timer is now counting down.");
     } else {
       alert("⏸️ Gaming session paused.");
-      // Save state when manually pausing
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.id) {
         saveTimerState(user.id, gamingTimer);
@@ -277,7 +265,6 @@ export default function App() {
     }
   };
 
-  // 🔥 UPDATED: Function to update user info with proper timer handling
   const updateUserInfo = (newData) => {
     setUserInfo(prevInfo => ({
       ...prevInfo,
@@ -286,21 +273,16 @@ export default function App() {
       balance: newData.totalSpent !== undefined ? formatBalance(newData.totalSpent) : prevInfo.balance
     }));
     
-    // Update gaming timer when quota changes (e.g., after purchase)
     if (newData.gamingQuotaMinutes !== undefined) {
-      // 🔥 SECURITY FIX: When adding quota, add to existing timer rather than replacing
       if (newData.quotaAdded) {
-        // This is a quota addition, add to existing timer
         const additionalSeconds = newData.quotaAdded * 60;
         setGamingTimer(prev => prev + additionalSeconds);
         console.log('🎮 Added', newData.quotaAdded, 'minutes to existing timer');
       } else {
-        // This is a full timer update (from database fetch)
         const newSeconds = newData.gamingQuotaMinutes * 60;
         setGamingTimer(newSeconds);
       }
       
-      // If timer was at 0 and user just bought more time, auto-start gaming
       if (gamingTimer <= 0 && newData.gamingQuotaMinutes > 0) {
         setIsGaming(true);
         console.log('🎮 Auto-restarting gaming session after quota purchase');
@@ -308,10 +290,8 @@ export default function App() {
     }
   };
 
-  // 🔥 UPDATED: Function to handle logout with timer state save
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to logout?")) {
-      // 🔥 SECURITY FIX: Save final timer state before logout
       if (isGaming && gamingTimer > 0) {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (user.id) {
@@ -320,7 +300,6 @@ export default function App() {
         }
       }
       
-      // Stop the gaming timer
       setIsGaming(false);
       setGamingTimer(0);
       
@@ -336,12 +315,10 @@ export default function App() {
     }
   };
 
-  // Show login screen first if not logged in
   if (!isLoggedIn) {
     return <LoginRegistration onLogin={handleLogin} />;
   }
 
-  // If logged in, show the main application with sidebar
   const renderSection = () => {
     switch (currentSection) {
       case "gaming":
@@ -350,6 +327,8 @@ export default function App() {
         return <QuotaPage userInfo={userInfo} updateUserInfo={updateUserInfo} />;
       case "food":
         return <FoodPage userInfo={userInfo} updateUserInfo={updateUserInfo} />;
+      case "ai-assistant":
+        return <AIAssistantPage userInfo={userInfo} />;
       case "reports":
         return <ReportsPage userInfo={userInfo} />;
       case "settings":
@@ -359,12 +338,10 @@ export default function App() {
     }
   };
 
-  // Toggle sidebar
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Format time
   const formatTime = (date) => {
     return date.toLocaleTimeString('en-US', { 
       hour12: false,
@@ -731,11 +708,8 @@ export default function App() {
         }
       `}</style>
 
-      {/* Enhanced User Sidebar */}
       <div style={styles.sidebar}>
-        {/* Header Section */}
         <div style={styles.sidebarHeader}>
-          {/* Toggle Button */}
           <button
             onClick={toggleSidebar}
             style={styles.toggleButton}
@@ -749,7 +723,6 @@ export default function App() {
             {sidebarOpen ? "←" : "→"}
           </button>
 
-          {/* Enhanced Brand Logo */}
           <div style={styles.brandSection}>
             <div style={styles.brandText}>
               <div style={styles.brandTitle}>
@@ -766,10 +739,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Enhanced User Info Card with Real Data */}
           {sidebarOpen && (
             <div style={styles.userInfoCard}>
-              {/* User Profile Section */}
               <div style={styles.userProfile}>
                 <div style={styles.userAvatar}>
                   {userInfo.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
@@ -780,15 +751,13 @@ export default function App() {
                 </div>
               </div>
               
-              {/* Separator Line */}
               <div style={styles.separator}></div>
               
-              {/* Enhanced User Stats Grid with Real Data */}
               <div style={styles.statsGrid}>
                 <div style={styles.statCard}>
                   <div style={{
                     ...styles.statValue, 
-                    color: gamingTimer <= 300 ? "#EF4444" : "#34D399" // Red if less than 5 minutes
+                    color: gamingTimer <= 300 ? "#EF4444" : "#34D399"
                   }}>
                     {userInfo.remainingTime}
                     {isGaming && (
@@ -810,12 +779,9 @@ export default function App() {
           )}
         </div>
 
-        {/* Enhanced Navigation */}
         <nav style={styles.navigation}>
-          {/* Navigation Items Container */}
           <div style={styles.navSection}>
             <div style={styles.navItems}>
-              {/* Navigation section label */}
               {sidebarOpen && (
                 <div style={styles.navLabel}>
                   Navigation
@@ -868,12 +834,10 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Active indicator */}
                     {isActive && (
                       <div style={styles.activeIndicator}></div>
                     )}
 
-                    {/* Hover effect overlay */}
                     <div style={styles.hoverOverlay}></div>
                   </button>
                 );
@@ -881,9 +845,7 @@ export default function App() {
             </div>
           </div>
           
-          {/* Enhanced Bottom Section */}
           <div style={styles.bottomSection}>
-            {/* Time Display */}
             {sidebarOpen && (
               <div style={styles.timeDisplay}>
                 <div style={styles.timeValue}>
@@ -895,7 +857,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Logout button */}
             <button 
               onClick={handleLogout}
               style={styles.logoutButton}
@@ -926,9 +887,7 @@ export default function App() {
         </nav>
       </div>
 
-      {/* Main content */}
       <div style={styles.mainContent}>
-        {/* Enhanced Top bar */}
         <div style={styles.topBar}>
           <div style={styles.topBarContent}>
             <h1 style={styles.pageTitle}>
@@ -938,7 +897,6 @@ export default function App() {
             </h1>
             
             <div style={styles.statusIndicators}>
-              {/* Enhanced Status indicators */}
               <div style={styles.statusGroup}>
                 <div style={styles.onlineStatus}>
                   <div style={styles.statusDot}></div>
@@ -946,7 +904,6 @@ export default function App() {
                 </div>
               </div>
               
-              {/* Current time for collapsed sidebar */}
               {!sidebarOpen && (
                 <div style={styles.statusText}>
                   {formatTime(currentTime)}
@@ -956,7 +913,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Page content */}
         <div style={styles.pageContent}>
           <div style={styles.contentWrapper}>
             {renderSection()}

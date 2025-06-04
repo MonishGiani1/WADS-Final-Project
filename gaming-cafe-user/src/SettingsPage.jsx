@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
-  // 🔥 DATABASE INTEGRATION: Get user data from localStorage/context
   const [user, setUser] = useState({
     fullName: "",
     email: "",
@@ -9,7 +8,6 @@ export default function SettingsPage() {
     memberSince: null
   });
 
-  // State for the form fields
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -19,32 +17,25 @@ export default function SettingsPage() {
     confirmNewPassword: "",
   });
 
-  // State for form validation errors
   const [errors, setErrors] = useState({});
 
-  // State for success messages
   const [successMessage, setSuccessMessage] = useState("");
 
-  // State for loading
   const [isLoading, setIsLoading] = useState(false);
 
-  // State for hover effects
   const [hoveredButton, setHoveredButton] = useState(null);
 
-  // State for active section
   const [activeSection, setActiveSection] = useState("profile");
 
-  // 🔥 DATABASE INTEGRATION: Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
       try {
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         const token = localStorage.getItem('token');
         
-        console.log('Loading user data:', { storedUser, token }); // DEBUG
+        console.log('Loading user data:', { storedUser, token });
         
         if (storedUser.id && token) {
-          // Fetch latest user data from database
           const response = await fetch(`/api/users/${storedUser.id}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -52,11 +43,11 @@ export default function SettingsPage() {
             }
           });
           
-          console.log('API Response status:', response.status); // DEBUG
+          console.log('API Response status:', response.status);
           
           if (response.ok) {
             const userData = await response.json();
-            console.log('User data from API:', userData); // DEBUG
+            console.log('User data from API:', userData);
             
             setUser({
               fullName: userData.user.fullName || '',
@@ -65,7 +56,6 @@ export default function SettingsPage() {
               memberSince: userData.user.created
             });
             
-            // Update form data with current user data
             setFormData({
               fullName: userData.user.fullName || '',
               email: userData.user.email || '',
@@ -75,8 +65,7 @@ export default function SettingsPage() {
               confirmNewPassword: "",
             });
           } else {
-            console.log('API failed, using localStorage'); // DEBUG
-            // Fallback to localStorage data if API fails
+            console.log('API failed, using localStorage');
             setUser(storedUser);
             setFormData({
               fullName: storedUser.fullName || '',
@@ -88,11 +77,10 @@ export default function SettingsPage() {
             });
           }
         } else {
-          console.log('No user ID or token found'); // DEBUG
+          console.log('No user ID or token found');
         }
       } catch (error) {
         console.error('Error loading user data:', error);
-        // Fallback to localStorage data
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         setUser(storedUser);
         setFormData({
@@ -109,25 +97,21 @@ export default function SettingsPage() {
     loadUserData();
   }, []);
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle profile update with real API call
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
     
-    console.log('Starting profile update with data:', formData); // DEBUG
+    console.log('Starting profile update with data:', formData);
     
-    // Simple validation
     const newErrors = {};
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.email.trim()) {
@@ -155,9 +139,8 @@ export default function SettingsPage() {
           email: formData.email,
           phoneNumber: formData.phoneNumber
         }
-      }); // DEBUG
+      });
       
-      // Check if we have required data
       if (!storedUser.id) {
         console.error('No user ID found in localStorage');
         setErrors({ general: 'User ID not found. Please log in again.' });
@@ -185,10 +168,9 @@ export default function SettingsPage() {
         })
       });
       
-      console.log('Profile update response status:', response.status); // DEBUG
-      console.log('Profile update response headers:', Object.fromEntries(response.headers.entries())); // DEBUG
+      console.log('Profile update response status:', response.status);
+      console.log('Profile update response headers:', Object.fromEntries(response.headers.entries()));
       
-      // Check if response is JSON
       const contentType = response.headers.get('Content-Type');
       let data;
       
@@ -200,12 +182,10 @@ export default function SettingsPage() {
         data = { error: 'Server returned non-JSON response', details: textData };
       }
       
-      console.log('Profile update response data:', data); // DEBUG
+      console.log('Profile update response data:', data);
       
       if (response.ok) {
-        // Check multiple possible success indicators
         if (data.success || data.message === 'success' || response.status === 200) {
-          // Update local state
           const updatedUser = {
             ...user,
             fullName: formData.fullName,
@@ -214,7 +194,6 @@ export default function SettingsPage() {
           };
           setUser(updatedUser);
           
-          // Update localStorage - Fix: include the user ID
           const userToStore = {
             ...storedUser,
             fullName: formData.fullName,
@@ -225,7 +204,6 @@ export default function SettingsPage() {
           
           setSuccessMessage("Profile updated successfully!");
           
-          // Clear success message after 3 seconds
           setTimeout(() => {
             setSuccessMessage("");
           }, 3000);
@@ -240,7 +218,6 @@ export default function SettingsPage() {
           data
         });
         
-        // Handle different error responses
         let errorMessage = 'Failed to update profile';
         if (response.status === 401) {
           errorMessage = 'Authentication failed. Please log in again.';
@@ -265,15 +242,13 @@ export default function SettingsPage() {
     setIsLoading(false);
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle password update with real API call
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
     
-    console.log('Starting password update'); // DEBUG
+    console.log('Starting password update');
     
-    // Validate password
     const newErrors = {};
     if (!formData.currentPassword) newErrors.currentPassword = "Current password is required";
     if (!formData.newPassword) {
@@ -295,7 +270,7 @@ export default function SettingsPage() {
       const token = localStorage.getItem('token');
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
       
-      console.log('Making API call to update password for user:', storedUser.id); // DEBUG
+      console.log('Making API call to update password for user:', storedUser.id);
       
       const response = await fetch(`/api/users/${storedUser.id}/password`, {
         method: 'PATCH',
@@ -309,15 +284,14 @@ export default function SettingsPage() {
         })
       });
       
-      console.log('Password update response status:', response.status); // DEBUG
+      console.log('Password update response status:', response.status);
       
       const data = await response.json();
-      console.log('Password update response data:', data); // DEBUG
+      console.log('Password update response data:', data);
       
       if (response.ok && data.success) {
         setSuccessMessage("Password updated successfully!");
         
-        // Clear password fields
         setFormData({
           ...formData,
           currentPassword: "",
@@ -325,12 +299,11 @@ export default function SettingsPage() {
           confirmNewPassword: "",
         });
         
-        // Clear success message after 3 seconds
         setTimeout(() => {
           setSuccessMessage("");
         }, 3000);
       } else {
-        console.error('Password update failed:', data); // DEBUG
+        console.error('Password update failed:', data);
         setErrors({ currentPassword: data.error || data.message || 'Failed to update password' });
       }
       
@@ -342,14 +315,13 @@ export default function SettingsPage() {
     setIsLoading(false);
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle account deletion with real API call
   const handleDeleteAccount = async () => {
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       try {
         const token = localStorage.getItem('token');
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         
-        console.log('Attempting to delete account for user:', storedUser.id); // DEBUG
+        console.log('Attempting to delete account for user:', storedUser.id);
         
         const response = await fetch(`/api/users/${storedUser.id}`, {
           method: 'DELETE',
@@ -360,15 +332,13 @@ export default function SettingsPage() {
         });
         
         const data = await response.json();
-        console.log('Delete account response:', data); // DEBUG
+        console.log('Delete account response:', data);
         
         if (data.success) {
-          // Clear localStorage and redirect to login
           localStorage.removeItem('user');
           localStorage.removeItem('token');
           setSuccessMessage("Account deleted successfully. Redirecting...");
           
-          // Redirect to login page after 2 seconds
           setTimeout(() => {
             window.location.href = '/login';
           }, 2000);
@@ -383,7 +353,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Custom styles matching GamingSection style
   const styles = {
     container: {
       width: "100%",
@@ -583,7 +552,6 @@ export default function SettingsPage() {
         </span>
       </div>
 
-      {/* Member Since Info */}
       <div style={styles.memberInfo}>
         <div style={styles.memberSince}>Member Since</div>
         <div style={styles.memberDate}>
@@ -736,7 +704,6 @@ export default function SettingsPage() {
       <div style={styles.innerContainer}>
         <h1 style={styles.heading}>Account Settings</h1>
         
-        {/* Success message */}
         {successMessage && (
           <div style={styles.successMessage}>
             <p>{successMessage}</p>
@@ -749,14 +716,12 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* General error message */}
         {errors.general && (
           <div style={styles.errorMessage}>
             <p>{errors.general}</p>
           </div>
         )}
         
-        {/* Tabs */}
         <div style={styles.tabsContainer}>
           <button 
             style={{
@@ -778,14 +743,11 @@ export default function SettingsPage() {
           </button>
         </div>
         
-        {/* Active Section Content */}
         {activeSection === "profile" && renderProfileTab()}
         {activeSection === "security" && renderSecurityTab()}
         
-        {/* Always show danger zone at the bottom */}
         {renderDangerZone()}
 
-        {/* CSS for spinner animation */}
         <style>{`
           @keyframes spin {
             to { transform: rotate(360deg); }

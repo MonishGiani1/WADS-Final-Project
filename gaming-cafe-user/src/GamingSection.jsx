@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import GameDetailPage from "./GameDetailPage"; // Import the new component
+import GameDetailPage from "./GameDetailPage";
 
-// Fix imports by using relative paths
 import valorantImg from "./assets/valorant.png";
 import csImg from "./assets/cs2.jpg";
 import apexImg from "./assets/apex.jpg";
@@ -26,13 +25,11 @@ export default function GamingSection() {
   const [imageErrors, setImageErrors] = useState({});
   const [playerCounts, setPlayerCounts] = useState({});
   const [isLoadingCounts, setIsLoadingCounts] = useState(true);
-  const [selectedGame, setSelectedGame] = useState(null); // New state for selected game
-  const [currentView, setCurrentView] = useState("library"); // New state for view management
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [currentView, setCurrentView] = useState("library");
 
-  // Fallback image for all games
   const fallbackImage = "/api/placeholder/480/320";
 
-  // Game categories
   const categories = [
     { id: "all", name: "All Games" },
     { id: "fps", name: "FPS" },
@@ -42,7 +39,6 @@ export default function GamingSection() {
     { id: "sandbox", name: "Sandbox" }
   ];
 
-  // Enhanced games data with categories and descriptions
   const baseGames = [
     { 
       id: 1,
@@ -181,18 +177,15 @@ export default function GamingSection() {
     },
   ];
 
-  // Merge base game data with live player counts
   const games = baseGames.map(game => ({
     ...game,
     playerCount: playerCounts[game.name] || game.defaultPlayerCount
   }));
 
-  // Fetch player counts from backend API
   useEffect(() => {
     const fetchPlayerCounts = async () => {
       try {
         setIsLoadingCounts(true);
-        // Replace with your actual backend URL
         const response = await fetch('/api/player-counts');
         if (!response.ok) throw new Error('Failed to fetch player counts');
         
@@ -200,7 +193,6 @@ export default function GamingSection() {
         setPlayerCounts(data);
       } catch (error) {
         console.error('Error fetching player counts:', error);
-        // If API fails, we'll use default values from baseGames
       } finally {
         setIsLoadingCounts(false);
       }
@@ -208,13 +200,11 @@ export default function GamingSection() {
 
     fetchPlayerCounts();
     
-    // Update player counts every 5 minutes
     const intervalId = setInterval(fetchPlayerCounts, 5 * 60 * 1000);
     
     return () => clearInterval(intervalId);
   }, []);
 
-  // Auto-rotate featured game every 10 seconds
   useEffect(() => {
     const intervalId = setInterval(() => {
       setFeaturedGameIndex(prevIndex => 
@@ -225,36 +215,28 @@ export default function GamingSection() {
     return () => clearInterval(intervalId);
   }, [games.length]);
 
-  // Filter games based on search query and category
   const filteredGames = games.filter(game => {
     const matchesSearch = game.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "all" || game.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Get current featured game
   const featuredGame = games[featuredGameIndex];
   
-  // Handle game selection - now opens detail page instead of launching directly
   const handleGameSelect = (game) => {
     setSelectedGame(game);
     setCurrentView("detail");
   };
 
-  // Handle launching game from detail page
   const handleLaunchGame = (game) => {
     alert(`Launching ${game.name}! Get ready to play.`);
-    // Here you could add actual game launch logic
-    // For example: window.open(game.launchUrl) or invoke a desktop app
   };
 
-  // Handle going back to library
   const handleBackToLibrary = () => {
     setSelectedGame(null);
     setCurrentView("library");
   };
 
-  // Handle image loading errors
   const handleImageError = (gameId) => {
     setImageErrors(prev => ({
       ...prev,
@@ -262,7 +244,6 @@ export default function GamingSection() {
     }));
   };
 
-  // If detail view is active, show the GameDetailPage
   if (currentView === "detail" && selectedGame) {
     return (
       <GameDetailPage
@@ -273,7 +254,6 @@ export default function GamingSection() {
     );
   }
 
-  // Custom styles with !important to override conflicts
   const styles = {
     container: {
       width: "100%",
@@ -467,7 +447,6 @@ export default function GamingSection() {
       <div style={styles.innerContainer}>
         <h1 style={styles.heading}>Game Library</h1>
         
-        {/* Featured Game */}
         {featuredGame && (
           <div style={styles.featuredSection}>
             <img 
@@ -494,7 +473,6 @@ export default function GamingSection() {
           </div>
         )}
         
-        {/* Search and Filter */}
         <div style={styles.searchAndFilterSection}>
           <input
             type="text"
@@ -521,7 +499,6 @@ export default function GamingSection() {
           </div>
         </div>
         
-        {/* Games Grid */}
         {filteredGames.length > 0 ? (
           <div style={styles.gamesGrid}>
             {filteredGames.map((game) => (

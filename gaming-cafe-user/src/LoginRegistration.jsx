@@ -14,17 +14,12 @@ export default function LoginRegistration({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // =====================================================
-  // 🔥 DATABASE INTEGRATION: LOGIN FUNCTION
-  // =====================================================
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Clear previous errors
     setErrors({});
     
-    // Validate login form
     const newErrors = {};
     if (!loginForm.email) newErrors.loginEmail = "Email is required";
     if (!loginForm.password) newErrors.loginPassword = "Password is required";
@@ -36,7 +31,6 @@ export default function LoginRegistration({ onLogin }) {
     }
     
     try {
-      // 🔥 REAL DATABASE CALL - Replace the mock code below
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -48,9 +42,8 @@ export default function LoginRegistration({ onLogin }) {
       const data = await response.json();
       
         if (data.success) {
-          // ✅ Login successful - user exists in database
           localStorage.setItem('user', JSON.stringify({
-          id: data.user.id, // 🔥 include the id here!
+          id: data.user.id,
           fullName: data.user.fullName,
           email: data.user.email,
           phoneNumber: data.user.phoneNumber,
@@ -59,9 +52,8 @@ export default function LoginRegistration({ onLogin }) {
         localStorage.setItem('token', data.token);
         
         alert(`✅ ${data.message} Welcome back, ${data.user.fullName}!`);
-        onLogin(data.user); // Pass user data to parent component
+        onLogin(data.user);
       } else {
-        // ❌ Login failed - user not found or wrong password
         setErrors({ loginEmail: data.error });
       }
       
@@ -70,26 +62,16 @@ export default function LoginRegistration({ onLogin }) {
       setErrors({ loginEmail: 'Network error. Please try again.' });
     }
     
-    // 🔥 REMOVE THIS MOCK CODE AFTER DATABASE IS CONNECTED:
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-    // console.log("Login submitted:", loginForm);
-    // alert("✅ Login successful! Welcome back to ICHI Gaming Cafe.");
-    // onLogin();
     
     setIsLoading(false);
   };
 
-  // =====================================================
-  // 🔥 DATABASE INTEGRATION: REGISTRATION FUNCTION
-  // =====================================================
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Clear previous errors
     setErrors({});
     
-    // Validate registration form
     const newErrors = {};
     if (!registerForm.fullName) newErrors.fullName = "Full name is required";
     if (!registerForm.email) newErrors.email = "Email is required";
@@ -106,7 +88,6 @@ export default function LoginRegistration({ onLogin }) {
     }
     
     try {
-      // 🔥 REAL DATABASE CALL - Replace the mock code below
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -123,10 +104,8 @@ export default function LoginRegistration({ onLogin }) {
       const data = await response.json();
       
       if (data.success) {
-        // ✅ Registration successful - user saved to database
         alert(`✅ ${data.message}`);
         setActiveTab("login");
-        // Clear registration form
         setRegisterForm({
           fullName: "",
           email: "",
@@ -135,7 +114,6 @@ export default function LoginRegistration({ onLogin }) {
           phoneNumber: ""
         });
       } else {
-        // ❌ Registration failed - email already exists
         setErrors({ email: data.error });
       }
       
@@ -144,32 +122,15 @@ export default function LoginRegistration({ onLogin }) {
       setErrors({ email: 'Network error. Please try again.' });
     }
     
-    // 🔥 REMOVE THIS MOCK CODE AFTER DATABASE IS CONNECTED:
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-    // console.log("Registration submitted:", registerForm);
-    // alert("✅ Registration successful! You can now log in.");
-    // setActiveTab("login");
     
     setIsLoading(false);
   };
 
-  // =====================================================
-  // 🔥 DATABASE INTEGRATION: FORGOT PASSWORD FUNCTION
-  // =====================================================
   const handleForgotPassword = async () => {
     const email = prompt("Enter your email address for password reset:");
     if (email) {
       try {
-        // 🔥 ADD FORGOT PASSWORD API CALL HERE
-        // const response = await fetch('/api/auth/forgot-password', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ email })
-        // });
-        // const data = await response.json();
-        // alert(data.message || 'Password reset link sent to your email!');
         
-        // 🔥 TEMPORARY PLACEHOLDER - REMOVE AFTER API IS READY
         alert('Password reset feature will be available after database integration.');
       } catch (error) {
         alert('Failed to send reset email. Please try again.');
@@ -177,15 +138,8 @@ export default function LoginRegistration({ onLogin }) {
     }
   };
 
-  // =====================================================
-  // 🔥 DATABASE INTEGRATION: SOCIAL LOGIN FUNCTIONS
-  // =====================================================
   const handleSocialLogin = (provider) => {
-    // 🔥 ADD SOCIAL LOGIN INTEGRATION HERE
-    // Redirect to OAuth provider or open popup
-    // window.location.href = `/api/auth/${provider}`;
     
-    // 🔥 TEMPORARY PLACEHOLDER - REMOVE AFTER OAUTH IS SETUP
     alert(`${provider} login will be available after OAuth integration.`);
   };
 
@@ -193,7 +147,6 @@ export default function LoginRegistration({ onLogin }) {
     const { name, value } = e.target;
     setLoginForm({...loginForm, [name]: value});
     
-    // Clear errors when user starts typing
     if (errors.loginEmail || errors.loginPassword) {
       setErrors({...errors, [name === 'email' ? 'loginEmail' : 'loginPassword']: null});
     }
@@ -203,13 +156,11 @@ export default function LoginRegistration({ onLogin }) {
     const { name, value } = e.target;
     setRegisterForm({...registerForm, [name]: value});
     
-    // Clear errors when user starts typing
     if (errors[name]) {
       setErrors({...errors, [name]: null});
     }
   };
 
-  // Generate random star positions for the background
   const generateStars = (count) => {
     const stars = [];
     for (let i = 0; i < count; i++) {
@@ -497,7 +448,6 @@ export default function LoginRegistration({ onLogin }) {
 
   return (
     <div style={styles.container}>
-      {/* Star background */}
       <div style={styles.starsContainer}>
         {stars.map((star, index) => (
           <div 
@@ -514,7 +464,6 @@ export default function LoginRegistration({ onLogin }) {
         ))}
       </div>
 
-      {/* Login/Registration form */}
       <div style={styles.formContainer}>
         <div style={styles.formHeader}>
           <h1 style={styles.formTitle}>ICHI GAMING</h1>
@@ -781,7 +730,6 @@ export default function LoginRegistration({ onLogin }) {
           </div>
         </div>
 
-        {/* 🔥 DATABASE INTEGRATION: REMOVE THIS DEMO SECTION AFTER TESTING */}
         <div style={styles.demoCredentials}>
           <div style={styles.demoTitle}>Demo Login:</div>
           <div>Email: demo@ichi.com</div>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 export default function AdminSettings() {
-  // Admin server configuration
   const getAdminApiBase = () => {
     try {
       return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
@@ -11,7 +10,6 @@ export default function AdminSettings() {
   };
   const ADMIN_API_BASE = getAdminApiBase();
 
-  // Initial admin state
   const [admin, setAdmin] = useState({
     fullName: "Administrator",
     email: "admin@ichigaming.com",
@@ -22,7 +20,6 @@ export default function AdminSettings() {
     loginAttempts: 0
   });
 
-  // System settings state
   const [systemSettings, setSystemSettings] = useState({
     cafeName: "ICHI Gaming Cafe",
     timezone: "Asia/Jakarta",
@@ -44,7 +41,6 @@ export default function AdminSettings() {
     }
   });
 
-  // Form data state
   const [formData, setFormData] = useState({
     fullName: admin.fullName,
     email: admin.email,
@@ -55,7 +51,6 @@ export default function AdminSettings() {
     ...systemSettings
   });
 
-  // State management
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [hoveredButton, setHoveredButton] = useState(null);
@@ -63,12 +58,10 @@ export default function AdminSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load admin profile on component mount
   useEffect(() => {
     loadAdminProfile();
   }, []);
 
-  // Load admin profile from server
   const loadAdminProfile = async () => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -78,11 +71,6 @@ export default function AdminSettings() {
       }
 
       console.log('Loading admin profile...');
-      // For now, use the mock data since admin profile endpoint might not exist yet
-      // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}/api/admin/profile`, {
-      //   headers: { 'Authorization': `Bearer ${token}` }
-      // });
       
     } catch (error) {
       console.error('Error loading admin profile:', error);
@@ -90,20 +78,17 @@ export default function AdminSettings() {
     }
   };
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
     
     setFormData({ ...formData, [name]: newValue });
     
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
   };
 
-  // Handle notification changes
   const handleNotificationChange = (key) => {
     setFormData({
       ...formData,
@@ -114,12 +99,10 @@ export default function AdminSettings() {
     });
   };
 
-  // Handle admin profile update
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Validation
     const newErrors = {};
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.email.trim()) {
@@ -143,21 +126,7 @@ export default function AdminSettings() {
       }
 
       console.log('Updating admin profile...');
-      // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}/api/admin/profile`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({
-      //     fullName: formData.fullName,
-      //     email: formData.email,
-      //     phoneNumber: formData.phoneNumber
-      //   })
-      // });
 
-      // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setAdmin({
@@ -178,7 +147,6 @@ export default function AdminSettings() {
     }
   };
 
-  // Handle password update
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -209,20 +177,7 @@ export default function AdminSettings() {
       }
 
       console.log('Updating admin password...');
-      // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}/api/admin/change-password`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({
-      //     currentPassword: formData.currentPassword,
-      //     newPassword: formData.newPassword
-      //   })
-      // });
 
-      // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setSuccessMessage("Admin password updated successfully!");
@@ -242,7 +197,6 @@ export default function AdminSettings() {
     }
   };
 
-  // Handle system settings update
   const handleSystemUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -256,29 +210,7 @@ export default function AdminSettings() {
       }
 
       console.log('Updating system settings...');
-      // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}/api/admin/system-settings`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({
-      //     cafeName: formData.cafeName,
-      //     timezone: formData.timezone,
-      //     currency: formData.currency,
-      //     hourlyRate: formData.hourlyRate,
-      //     foodTax: formData.foodTax,
-      //     autoLogout: formData.autoLogout,
-      //     maxLoginAttempts: formData.maxLoginAttempts,
-      //     sessionTimeout: formData.sessionTimeout,
-      //     backupFrequency: formData.backupFrequency,
-      //     maintenanceMode: formData.maintenanceMode,
-      //     notifications: formData.notifications
-      //   })
-      // });
 
-      // Simulate API call for now
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setSystemSettings({
@@ -306,7 +238,6 @@ export default function AdminSettings() {
     }
   };
 
-  // Handle backup creation
   const handleCreateBackup = async () => {
     if (window.confirm("Create a full system backup? This may take several minutes.")) {
       setIsLoading(true);
@@ -319,13 +250,7 @@ export default function AdminSettings() {
         }
 
         console.log('Creating system backup...');
-        // TODO: Implement actual API call when endpoint is ready
-        // const response = await fetch(`${ADMIN_API_BASE}/api/admin/backup`, {
-        //   method: 'POST',
-        //   headers: { 'Authorization': `Bearer ${token}` }
-        // });
 
-        // Simulate backup creation
         await new Promise(resolve => setTimeout(resolve, 3000));
         setSuccessMessage("System backup created successfully!");
         setTimeout(() => setSuccessMessage(""), 3000);
@@ -338,7 +263,6 @@ export default function AdminSettings() {
     }
   };
 
-  // Handle system reset
   const handleSystemReset = () => {
     if (window.confirm("DANGER: Reset all system settings to defaults? This action cannot be undone.")) {
       if (window.confirm("Are you absolutely sure? This will reset ALL configuration settings.")) {
@@ -375,7 +299,6 @@ export default function AdminSettings() {
       marginBottom: "2rem"
     },
 
-    // Connection status
     connectionStatus: {
       backgroundColor: "rgba(16, 185, 129, 0.1)",
       border: "1px solid #10B981",
@@ -389,7 +312,6 @@ export default function AdminSettings() {
       fontSize: "0.875rem"
     },
 
-    // Loading state
     loadingContainer: {
       display: "flex",
       justifyContent: "center",
@@ -406,7 +328,6 @@ export default function AdminSettings() {
       animation: "spin 1s linear infinite"
     },
 
-    // Error state
     errorContainer: {
       backgroundColor: "rgba(239, 68, 68, 0.1)",
       border: "1px solid #EF4444",
@@ -670,7 +591,6 @@ export default function AdminSettings() {
     { id: "maintenance", name: "Maintenance" }
   ];
 
-  // Loading state
   if (isLoading && activeSection === "profile") {
     return (
       <div style={styles.container}>
@@ -688,7 +608,6 @@ export default function AdminSettings() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div style={styles.container}>
@@ -1135,14 +1054,12 @@ export default function AdminSettings() {
           System configuration, admin accounts, and security settings
         </p>
         
-        {/* Connection status */}
         <div style={styles.connectionStatus}>
           <p style={styles.connectionText}>
             Connected to Admin Server ({ADMIN_API_BASE})
           </p>
         </div>
         
-        {/* Success/Error messages */}
         {successMessage && (
           <div style={styles.successMessage}>
             <p>{successMessage}</p>
@@ -1167,7 +1084,6 @@ export default function AdminSettings() {
           </div>
         )}
         
-        {/* Tabs */}
         <div style={styles.tabsContainer}>
           {tabs.map((tab) => (
             <button 
@@ -1183,7 +1099,6 @@ export default function AdminSettings() {
           ))}
         </div>
         
-        {/* Active Section Content */}
         {activeSection === "profile" && renderProfileTab()}
         {activeSection === "security" && renderSecurityTab()}
         {activeSection === "system" && renderSystemTab()}

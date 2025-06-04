@@ -19,18 +19,15 @@ export default function AdminUserReports() {
     total: 0
   });
 
-  // Admin server configuration - fallback for browser environment
   const getAdminApiBase = () => {
     try {
       return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
     } catch (error) {
-      // Fallback for environments where process is not defined
       return 'http://localhost:5001';
     }
   };
   const ADMIN_API_BASE = getAdminApiBase();
 
-  // Load reports from backend
   useEffect(() => {
     loadReports();
   }, []);
@@ -83,7 +80,6 @@ export default function AdminUserReports() {
     }
   };
 
-  // Filter reports based on status, search, priority, and category
   const getFilteredReports = () => {
     return reports.filter(report => {
       const matchesTab = activeTab === "all" || report.status === activeTab;
@@ -97,7 +93,6 @@ export default function AdminUserReports() {
     });
   };
 
-  // Handle report status change
   const handleStatusChange = async (reportId, newStatus) => {
     if (window.confirm(`Are you sure you want to change this report status to ${newStatus}?`)) {
       try {
@@ -127,14 +122,12 @@ export default function AdminUserReports() {
           const result = await response.json();
           console.log('✅ Status updated successfully:', result);
           
-          // Update local state
           setReports(prev => prev.map(report => 
             report.id === reportId 
               ? { ...report, status: newStatus, updatedAt: new Date().toLocaleDateString() }
               : report
           ));
 
-          // Update selected report if it's the one being changed
           if (selectedReport?.id === reportId) {
             setSelectedReport(prev => ({
               ...prev,
@@ -143,7 +136,6 @@ export default function AdminUserReports() {
             }));
           }
 
-          // Reload reports to update stats
           await loadReports();
           alert(`✅ Report status updated to ${newStatus}`);
         } else {
@@ -157,7 +149,6 @@ export default function AdminUserReports() {
     }
   };
 
-  // Handle adding response to report
   const handleAddResponse = async (reportId) => {
     if (!responseText.trim()) {
       alert("Please enter a response message.");
@@ -198,7 +189,6 @@ export default function AdminUserReports() {
         const result = await response.json();
         console.log('✅ Response added successfully:', result);
         
-        // Update local state
         setReports(prev => prev.map(report => 
           report.id === reportId 
             ? { 
@@ -211,7 +201,6 @@ export default function AdminUserReports() {
             : report
         ));
 
-        // Update selected report
         if (selectedReport?.id === reportId) {
           setSelectedReport(prev => ({
             ...prev,
@@ -225,7 +214,6 @@ export default function AdminUserReports() {
         setResponseText("");
         alert("✅ Response sent successfully!");
         
-        // Reload reports to update stats
         await loadReports();
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -239,7 +227,6 @@ export default function AdminUserReports() {
     }
   };
 
-  // Handle escalating report
   const handleEscalate = async (reportId) => {
     if (window.confirm("Are you sure you want to escalate this report to management?")) {
       await handleStatusChange(reportId, 'escalated');
@@ -269,7 +256,6 @@ export default function AdminUserReports() {
       marginBottom: "2rem"
     },
 
-    // Loading states
     loadingContainer: {
       display: "flex",
       justifyContent: "center",
@@ -299,7 +285,6 @@ export default function AdminUserReports() {
       marginBottom: "1rem"
     },
 
-    // Connection status indicator
     connectionStatus: {
       backgroundColor: "rgba(16, 185, 129, 0.1)",
       border: "1px solid #10B981",
@@ -313,7 +298,6 @@ export default function AdminUserReports() {
       fontSize: "0.875rem"
     },
 
-    // Stats Cards
     statsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -337,7 +321,6 @@ export default function AdminUserReports() {
       color: "#9CA3AF"
     },
 
-    // Tabs
     tabsContainer: {
       display: "flex",
       overflowX: "auto",
@@ -378,7 +361,6 @@ export default function AdminUserReports() {
       textAlign: "center"
     },
 
-    // Filters
     filtersContainer: {
       display: "flex",
       gap: "1rem",
@@ -432,7 +414,6 @@ export default function AdminUserReports() {
       color: "white"
     },
 
-    // Reports Layout
     reportsLayout: {
       display: "grid",
       gridTemplateColumns: selectedReport ? "1fr 1fr" : "1fr",
@@ -441,7 +422,6 @@ export default function AdminUserReports() {
       minHeight: "600px"
     },
 
-    // Reports List
     reportsList: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -503,7 +483,6 @@ export default function AdminUserReports() {
       textTransform: "uppercase"
     },
 
-    // Report Detail Panel
     reportDetail: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -655,7 +634,6 @@ export default function AdminUserReports() {
     }
   };
 
-  // Add CSS animation
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -685,7 +663,6 @@ export default function AdminUserReports() {
 
   const filteredReports = getFilteredReports();
 
-  // Loading state
   if (isLoading) {
     return (
       <div style={styles.container}>
@@ -698,7 +675,6 @@ export default function AdminUserReports() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div style={styles.container}>
@@ -720,14 +696,12 @@ export default function AdminUserReports() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>User Reports Management</h1>
         <p style={styles.subtitle}>
           Handle user complaints, issues, and support tickets
         </p>
         
-        {/* Connection status */}
         <div style={styles.connectionStatus}>
           <p style={styles.connectionText}>
             ✅ Connected to Admin Server ({ADMIN_API_BASE})
@@ -735,7 +709,6 @@ export default function AdminUserReports() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={{...styles.statValue, color: "#F59E0B"}}>{reportStats.pending}</div>
@@ -755,7 +728,6 @@ export default function AdminUserReports() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabsContainer}>
         {[
           { id: "pending", name: "Pending", count: reportStats.pending },
@@ -778,7 +750,6 @@ export default function AdminUserReports() {
         ))}
       </div>
 
-      {/* Filters */}
       <div style={styles.filtersContainer}>
         <div style={styles.leftFilters}>
           <input
@@ -824,9 +795,7 @@ export default function AdminUserReports() {
         </div>
       </div>
 
-      {/* Reports Layout */}
       <div style={styles.reportsLayout}>
-        {/* Reports List */}
         <div style={styles.reportsList}>
           <div style={styles.reportsHeader}>
             <h3 style={{margin: 0, fontWeight: "600"}}>
@@ -895,7 +864,6 @@ export default function AdminUserReports() {
           </div>
         </div>
 
-        {/* Report Detail Panel */}
         {selectedReport && (
           <div style={styles.reportDetail}>
             <div style={styles.detailHeader}>
@@ -930,7 +898,6 @@ export default function AdminUserReports() {
             </div>
 
             <div style={styles.detailContent}>
-              {/* Description */}
               <div style={styles.descriptionSection}>
                 <h3 style={styles.sectionTitle}>Report Description</h3>
                 <div style={styles.descriptionText}>
@@ -938,7 +905,6 @@ export default function AdminUserReports() {
                 </div>
               </div>
 
-              {/* Existing Response */}
               {selectedReport.response && (
                 <div style={styles.responseSection}>
                   <h3 style={styles.sectionTitle}>Current Response</h3>
@@ -953,7 +919,6 @@ export default function AdminUserReports() {
                 </div>
               )}
 
-              {/* Add/Update Response */}
               <div style={styles.responseSection}>
                 <h3 style={styles.sectionTitle}>
                   {selectedReport.response ? "Update Response" : "Add Response"}
@@ -969,7 +934,6 @@ export default function AdminUserReports() {
               </div>
             </div>
 
-            {/* Actions */}
             <div style={styles.actionsContainer}>
               <div style={styles.actionsGrid}>
                 <button

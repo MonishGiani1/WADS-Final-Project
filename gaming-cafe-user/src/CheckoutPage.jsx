@@ -8,15 +8,13 @@ export default function CheckoutPage({
   onComplete, 
   checkoutType 
 }) {
-  // States for form data
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    paymentMethod: "credit-card", // Default to credit card
+    paymentMethod: "credit-card",
   });
   
-  // Credit card details
   const [cardDetails, setCardDetails] = useState({
     cardNumber: "",
     cardName: "",
@@ -24,11 +22,9 @@ export default function CheckoutPage({
     cvv: "",
   });
 
-  // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState(1); // 1: Details, 2: Payment, 3: Confirmation
+  const [step, setStep] = useState(1);
 
-  // Payment states
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [orderId, setOrderId] = useState(null);
@@ -36,7 +32,6 @@ export default function CheckoutPage({
   const [qrisPolling, setQrisPolling] = useState(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   
-  // 🔥 DATABASE INTEGRATION: Pre-fill user details if logged in
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.email) {
@@ -49,7 +44,6 @@ export default function CheckoutPage({
     }
   }, []);
 
-  // 🔥 DATABASE INTEGRATION: Save order to database
   const saveOrderToDatabase = async (orderData) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -61,7 +55,7 @@ export default function CheckoutPage({
         },
         body: JSON.stringify({
           ...orderData,
-          userId: user.id || null // Link to user account if logged in
+          userId: user.id || null
         })
       });
       return await response.json();
@@ -71,7 +65,6 @@ export default function CheckoutPage({
     }
   };
 
-  // 🔥 DATABASE INTEGRATION: Update order status
   const updateOrderStatus = async (orderId, status, paymentData = {}) => {
     try {
       await fetch(`/api/orders/${orderId}`, {
@@ -91,7 +84,6 @@ export default function CheckoutPage({
     }
   };
 
-  // 🔥 DATABASE INTEGRATION: Update user gaming quota (for gaming time purchases)
   const updateUserQuota = async (quotaMinutes) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -104,7 +96,7 @@ export default function CheckoutPage({
           },
           body: JSON.stringify({ 
             quotaMinutes: quotaMinutes,
-            action: 'add' // Add minutes to existing quota
+            action: 'add'
           })
         });
       }
@@ -113,7 +105,6 @@ export default function CheckoutPage({
     }
   };
 
-  // Clean up resources when component unmounts or on completion
   const cleanupResources = () => {
     if (qrisPolling) {
       clearInterval(qrisPolling);
@@ -121,7 +112,6 @@ export default function CheckoutPage({
     }
   };
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -130,7 +120,6 @@ export default function CheckoutPage({
     });
   };
   
-  // Handle card details changes
   const handleCardChange = (e) => {
     const { name, value } = e.target;
     setCardDetails({
@@ -139,22 +128,17 @@ export default function CheckoutPage({
     });
   };
   
-  // Format price to Indonesian Rupiah
   const formatPrice = (price) => {
     return `Rp ${Number(price).toLocaleString('id-ID')}`;
   };
 
-  // Format card number with spaces
   const formatCardNumber = (value) => {
     if (!value) return value;
-    // Remove all non-digit characters
     const v = value.replace(/\D/g, '');
-    // Add a space after every 4 digits
     const formatted = v.replace(/(\d{4})(?=\d)/g, '$1 ');
-    return formatted.substring(0, 19); // Limit to 16 digits + 3 spaces
+    return formatted.substring(0, 19);
   };
 
-  // Format expiry date MM/YY
   const formatExpiry = (value) => {
     if (!value) return value;
     const v = value.replace(/\D/g, '');
@@ -164,12 +148,9 @@ export default function CheckoutPage({
     return v;
   };
 
-  // Format phone number
   const formatPhoneNumber = (value) => {
     if (!value) return value;
-    // Remove all non-digit characters
     const v = value.replace(/\D/g, '');
-    // Add proper Indonesia format (+62)
     if (v.startsWith('0')) {
       return `+62 ${v.substring(1)}`;
     } else if (v.startsWith('62')) {
@@ -183,9 +164,7 @@ export default function CheckoutPage({
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Check if it's time to move to the next step
     if (step === 1) {
-      // Validate personal details
       if (!formData.name || !formData.email || !formData.phone) {
         alert("Please fill in all personal details.");
         return;
@@ -199,11 +178,9 @@ export default function CheckoutPage({
       setPaymentProcessing(true);
     
       try {
-        // Generate a unique order ID
         const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         setOrderId(uniqueOrderId);
 
-        // 🔥 DATABASE INTEGRATION: Save order to database BEFORE payment
         const orderData = {
           orderId: uniqueOrderId,
           customerName: formData.name,
@@ -213,7 +190,7 @@ export default function CheckoutPage({
           totalAmount: totalAmount,
           paymentMethod: formData.paymentMethod,
           paymentStatus: 'pending',
-          checkoutType: checkoutType, // 'quota' or 'food'
+          checkoutType: checkoutType,
           stripePaymentIntentId: null,
           qrisTransactionId: null
         };
@@ -222,14 +199,12 @@ export default function CheckoutPage({
         console.log('✅ Order saved to database:', uniqueOrderId);
       
         if (formData.paymentMethod === "credit-card") {
-          // Validate card details
           if (!cardDetails.cardNumber || !cardDetails.cardName || !cardDetails.expiry || !cardDetails.cvv) {
             throw new Error("Please fill in all card details.");
           }
         
-          // Call Stripe payment API
           const response = await axios.post('/api/create-payment-intent', {
-            amount: totalAmount * 100, // Convert to smallest currency unit
+            amount: totalAmount * 100,
             currency: 'idr',
             description: `${checkoutType === 'quota' ? 'Gaming Time' : 'Food Order'} for ${formData.name}`,
             metadata: {
@@ -241,27 +216,20 @@ export default function CheckoutPage({
           });
           
           if (response.data && response.data.clientSecret) {
-            // 🔥 DATABASE INTEGRATION: Update order with Stripe payment intent ID
             await updateOrderStatus(uniqueOrderId, 'processing', {
               stripePaymentIntentId: response.data.id
             });
 
-            // In a real implementation, you would use Stripe.js elements to confirm payment
-            // For this implementation, we'll simulate a successful payment
             
-            // Verify the payment status
             const verifyResponse = await axios.get(`/api/verify-payment/${response.data.id}`);
             if (verifyResponse.data.status === 'succeeded') {
-              // 🔥 DATABASE INTEGRATION: Update order status to completed
               await updateOrderStatus(uniqueOrderId, 'completed', {
                 paidAt: new Date(),
                 paymentMethod: 'credit-card'
               });
 
-              // 🔥 DATABASE INTEGRATION: If it's gaming quota, update user's quota
               if (checkoutType === 'quota') {
                 const totalQuotaMinutes = items.reduce((total, item) => {
-                  // Assuming gaming time items have minutes in their data
                   return total + (item.minutes || 0) * (item.quantity || 1);
                 }, 0);
                 
@@ -274,15 +242,13 @@ export default function CheckoutPage({
               setPaymentStatus('success');
               console.log('✅ Payment completed and order updated');
             } else {
-              // In a real implementation, you would handle other statuses appropriately
-              setPaymentStatus('success'); // For demonstration purposes
+              setPaymentStatus('success');
             }
           } else {
             throw new Error('Failed to process card payment');
           }
         
         } else if (formData.paymentMethod === "qris") {
-          // Call QRIS payment API
           const response = await axios.post('/api/create-qris-payment', {
             amount: totalAmount,
             orderId: uniqueOrderId,
@@ -293,25 +259,21 @@ export default function CheckoutPage({
           if (response.data.success) {
             setQrisData(response.data);
 
-            // 🔥 DATABASE INTEGRATION: Update order with QRIS transaction ID
             await updateOrderStatus(uniqueOrderId, 'awaiting_payment', {
               qrisTransactionId: response.data.transactionId
             });
           
-            // Start polling for payment status
             const pollingInterval = setInterval(async () => {
               try {
                 const statusResponse = await axios.get(`/api/check-qris-status/${response.data.transactionId}`);
                 
                 if (statusResponse.data.status === 'COMPLETED' || statusResponse.data.status === 'PAID') {
-                  // 🔥 DATABASE INTEGRATION: Update order status to completed
                   await updateOrderStatus(uniqueOrderId, 'completed', {
                     paidAt: new Date(),
                     qrisPaidAmount: statusResponse.data.paidAmount,
                     qrisPaidAt: statusResponse.data.paidAt
                   });
 
-                  // 🔥 DATABASE INTEGRATION: If it's gaming quota, update user's quota
                   if (checkoutType === 'quota') {
                     const totalQuotaMinutes = items.reduce((total, item) => {
                       return total + (item.minutes || 0) * (item.quantity || 1);
@@ -333,7 +295,7 @@ export default function CheckoutPage({
               } catch (error) {
                 console.error('Error checking QRIS status', error);
               }
-            }, 5000); // Check every 5 seconds
+            }, 5000);
           
             setQrisPolling(pollingInterval);
           } else {
@@ -341,12 +303,10 @@ export default function CheckoutPage({
           }
         }
       
-        // If not QRIS (which has its own polling), move to confirmation step
         if (formData.paymentMethod !== "qris") {
           setStep(3);
         }
       } catch (error) {
-        // 🔥 DATABASE INTEGRATION: Update order status to failed if payment fails
         if (orderId) {
           await updateOrderStatus(orderId, 'failed', {
             failureReason: error.message
@@ -358,7 +318,6 @@ export default function CheckoutPage({
       } finally {
         setIsProcessing(false);
       
-        // Keep payment processing true for QRIS until payment completed
         if (formData.paymentMethod !== "qris") {
           setPaymentProcessing(false);
         }
@@ -368,12 +327,10 @@ export default function CheckoutPage({
   
     if (step === 3) {
       cleanupResources();
-      // Complete the checkout process
       onComplete();
     }
   };
 
-  // Handle step navigation
   const handleBackStep = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -383,7 +340,6 @@ export default function CheckoutPage({
     }
   };
 
-  // Define styles
   const styles = {
     overlay: {
       position: "fixed",
@@ -658,7 +614,6 @@ export default function CheckoutPage({
     }
   };
 
-  // Add @keyframes for spinner animation
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -674,7 +629,6 @@ export default function CheckoutPage({
     };
   }, []);
 
-  // Cleanup QRIS polling when component unmounts
   useEffect(() => {
     return () => {
       if (qrisPolling) {
@@ -686,7 +640,6 @@ export default function CheckoutPage({
   return (
     <div style={styles.overlay}>
       <div style={styles.container}>
-        {/* Progress Steps */}
         <div style={styles.steps}>
           <div style={styles.stepLine}></div>
           <div style={styles.step}>
@@ -747,7 +700,6 @@ export default function CheckoutPage({
           </div>
         </div>
 
-        {/* Header with title and close button */}
         <div style={styles.header}>
           <h2 style={styles.title}>
             {step === 3 ? "Order Confirmation" : `Checkout - ${checkoutType === 'quota' ? 'Gaming Time' : 'Food & Drinks'}`}
@@ -757,7 +709,6 @@ export default function CheckoutPage({
           </button>
         </div>
 
-        {/* Step 3: Confirmation */}
         {step === 3 && (
           <div style={styles.confirmationMessage}>
             <div style={styles.confirmationIcon}>✓</div>
@@ -774,10 +725,8 @@ export default function CheckoutPage({
           </div>
         )}
 
-        {/* Steps 1-2: Form */}
         {step < 3 && (
           <form onSubmit={handleSubmit} style={styles.form}>
-            {/* Order Summary */}
             <div style={styles.orderSummary}>
               <h3 style={styles.orderTitle}>Order Summary</h3>
               <div style={styles.itemsList}>
@@ -799,7 +748,6 @@ export default function CheckoutPage({
               </div>
             </div>
 
-            {/* Step 1: Personal Details */}
             {step === 1 && (
               <>
                 <div style={styles.formGroup}>
@@ -887,7 +835,6 @@ export default function CheckoutPage({
               </>
             )}
 
-            {/* Step 2: Payment Details */}
             {step === 2 && (
               <>
                 {formData.paymentMethod === "credit-card" && (
@@ -985,7 +932,6 @@ export default function CheckoutPage({
               </>
             )}
 
-            {/* Form Navigation Buttons */}
             <div style={styles.buttonGroup}>
               <button
                 type="button"

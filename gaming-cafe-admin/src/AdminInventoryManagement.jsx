@@ -20,7 +20,6 @@ export default function AdminInventoryManagement() {
     isAvailable: true
   });
 
-  // Admin server configuration - same as reports
   const getAdminApiBase = () => {
     try {
       return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
@@ -30,7 +29,6 @@ export default function AdminInventoryManagement() {
   };
   const ADMIN_API_BASE = getAdminApiBase();
 
-  // Load menu items from API
   useEffect(() => {
     loadMenuItems();
   }, []);
@@ -82,7 +80,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Add new menu item
   const handleAddItem = async (e) => {
     e.preventDefault();
     try {
@@ -130,7 +127,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Update menu item
   const handleUpdateItem = async (e) => {
     e.preventDefault();
     try {
@@ -179,7 +175,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Delete menu item
   const handleDeleteItem = async (itemId) => {
     if (!window.confirm('Are you sure you want to delete this menu item?')) {
       return;
@@ -220,7 +215,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Edit item
   const handleEditItem = (item) => {
     setEditingItem(item);
     setFormData({
@@ -235,7 +229,6 @@ export default function AdminInventoryManagement() {
     setShowEditModal(true);
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       name: "",
@@ -248,7 +241,6 @@ export default function AdminInventoryManagement() {
     });
   };
 
-  // Quick stock update
   const handleQuickStockUpdate = async (itemId, newStock) => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -286,7 +278,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Filter items
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -294,12 +285,10 @@ export default function AdminInventoryManagement() {
     return matchesSearch && matchesCategory;
   });
 
-  // Format price
   const formatPrice = (price) => {
     return `Rp ${price.toLocaleString('id-ID')}`;
   };
 
-  // Emoji options for food items
   const emojiOptions = ['🍕', '🍔', '🍟', '🌭', '🥪', '🌮', '🥗', '🍗', '🍖', '🍳', '🥤', '☕', '🧃', '🍦', '🍫', '🍰', '🧀', '🥨', '🍜', '🍲'];
 
   const styles = {
@@ -675,7 +664,6 @@ export default function AdminInventoryManagement() {
     }
   };
 
-  // Calculate stats
   const totalItems = menuItems.length;
   const availableItems = menuItems.filter(item => item.isAvailable).length;
   const lowStockItems = menuItems.filter(item => item.stock <= 5 && item.stock > 0).length;
@@ -726,7 +714,6 @@ export default function AdminInventoryManagement() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>
           <span style={styles.titleIcon}>📦</span>
@@ -749,14 +736,12 @@ export default function AdminInventoryManagement() {
         </button>
       </div>
 
-      {/* Connection status */}
       <div style={styles.connectionStatus}>
         <p style={styles.connectionText}>
           ✅ Connected to Admin Server ({ADMIN_API_BASE})
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div style={styles.statsCards}>
         <div style={styles.statCard}>
           <div style={styles.statValue}>{totalItems}</div>
@@ -776,7 +761,6 @@ export default function AdminInventoryManagement() {
         </div>
       </div>
 
-      {/* Controls */}
       <div style={styles.controls}>
         <input
           type="text"
@@ -801,9 +785,7 @@ export default function AdminInventoryManagement() {
         </select>
       </div>
 
-      {/* Inventory Table */}
       <div style={styles.tableContainer}>
-        {/* Table Header */}
         <div style={styles.tableHeader}>
           <div style={{...styles.tableRow, ...styles.tableHeaderRow}}>
             <div>Image</div>
@@ -817,7 +799,6 @@ export default function AdminInventoryManagement() {
           </div>
         </div>
 
-        {/* Table Body */}
         <div>
           {filteredItems.map((item) => {
             const stockStatus = getStockStatus(item.stock);
@@ -872,7 +853,6 @@ export default function AdminInventoryManagement() {
                       backgroundColor: item.isAvailable ? "#10B981" : "#6B7280"
                     }}
                     onClick={() => {
-                      // Toggle availability - you can implement this
                       console.log('Toggle availability for item:', item._id);
                     }}
                   >
@@ -924,7 +904,6 @@ export default function AdminInventoryManagement() {
         )}
       </div>
 
-      {/* Add Item Modal */}
       {showAddModal && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>
@@ -1073,7 +1052,6 @@ export default function AdminInventoryManagement() {
         </div>
       )}
 
-      {/* Edit Item Modal */}
       {showEditModal && editingItem && (
         <div style={styles.modal}>
           <div style={styles.modalContent}>

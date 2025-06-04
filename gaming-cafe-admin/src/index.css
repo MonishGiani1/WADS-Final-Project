@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom global styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -25,7 +24,6 @@ body {
   overflow: hidden;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -44,7 +42,6 @@ body {
   background: #9CA3AF;
 }
 
-/* Custom animations */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -72,7 +69,6 @@ body {
   }
 }
 
-/* Input focus styles */
 input:focus,
 textarea:focus,
 select:focus {
@@ -81,7 +77,6 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
-/* Button hover effects */
 button:hover:not(:disabled) {
   transform: translateY(-1px);
 }
@@ -90,19 +85,16 @@ button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-/* Disabled states */
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Table styles */
 table {
   border-collapse: collapse;
   width: 100%;
 }
 
-/* Custom utilities */
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -111,13 +103,11 @@ table {
   backdrop-filter: blur(2px);
 }
 
-/* Loading states */
 .loading {
   pointer-events: none;
   opacity: 0.7;
 }
 
-/* Success/Error states */
 .success {
   background-color: rgba(16, 185, 129, 0.1);
   border-color: #10B981;
@@ -136,14 +126,12 @@ table {
   color: #FBBF24;
 }
 
-/* Custom card styles */
 .glass-effect {
   background: rgba(31, 41, 55, 0.8);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive helpers */
 @media (max-width: 768px) {
   .sidebar-mobile {
     position: fixed;
@@ -156,7 +144,6 @@ table {
   }
 }
 
-/* Print styles */
 @media print {
   .no-print {
     display: none !important;

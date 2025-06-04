@@ -6,21 +6,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.ADMIN_PORT || 5001;
+const PORT = process.env.PORT || 5001;
 
-// Debug logging for environment variables
 console.log('🔍 Admin Server Environment check - MONGODB_URI exists:', !!process.env.MONGODB_URI);
 console.log('🔍 Admin Port:', PORT);
+console.log('🔍 Environment:', process.env.NODE_ENV || 'production');
 
-// MongoDB connection - UPDATED for consistency and Cloudflare Tunnel support
-const mongoURL = process.env.MONGODB_URI || 'mongodb://e2425-wads-l4bcg4:ciwrot6o@localhost:27018/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4';
-console.log('🔍 Admin server connecting to MongoDB:', mongoURL.replace(/:[^:@]*@/, ':***@'));
+const mongoURL = process.env.MONGODB_URI || process.env.DATABASE_URL || 'mongodb://localhost:27017/gaming-cafe-admin';
+console.log('🔍 Admin server connecting to MongoDB Atlas...');
 
-// Enhanced MongoDB connection options for production
 const mongoOptions = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 30000,
-  socketTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
   connectTimeoutMS: 30000,
   retryWrites: true,
   retryReads: true,
@@ -29,24 +27,20 @@ const mongoOptions = {
 
 mongoose.connect(mongoURL, mongoOptions)
   .then(() => {
-    console.log('🍃 Admin Server connected to MongoDB');
+    console.log('✅ Admin Server connected to MongoDB Atlas');
     console.log('📍 Database:', mongoose.connection.db.databaseName);
     console.log('🔌 Connection state:', mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected');
   })
   .catch(err => {
     console.error('❌ Admin MongoDB connection error:', err.message);
     console.error('🔍 Connection URL:', mongoURL.replace(/:[^:@]*@/, ':***@'));
-    console.error('Full error:', err);
     
-    // Retry connection after 5 seconds
     setTimeout(() => {
       console.log('🔄 Retrying MongoDB connection...');
       mongoose.connect(mongoURL, mongoOptions);
     }, 5000);
   });
 
-
-// User Schema (for admin to view users)
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -75,7 +69,6 @@ const userSchema = new mongoose.Schema({
   updated: { type: Date, default: Date.now }
 });
 
-// Reports Schema (for admin to manage reports)
 const reportSchema = new mongoose.Schema({
   id: { type: String, unique: true, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -107,7 +100,6 @@ const reportSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Menu Items Schema (for admin to manage inventory)
 const menuItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -139,7 +131,6 @@ const menuItemSchema = new mongoose.Schema({
   updated: { type: Date, default: Date.now }
 });
 
-// Orders Schema (for admin to manage orders)
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, unique: true, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -187,7 +178,6 @@ const orderSchema = new mongoose.Schema({
   failureReason: String
 });
 
-// Gaming Sessions Schema (for admin to view gaming activity)
 const gamingSessionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   stationNumber: { type: String, required: true },
@@ -208,7 +198,33 @@ const gamingSessionSchema = new mongoose.Schema({
   created: { type: Date, default: Date.now }
 });
 
-// Admin User Schema (for admin authentication)
+const gamingStationSchema = new mongoose.Schema({
+  stationNumber: { type: String, required: true, unique: true },
+  stationName: { type: String, required: true },
+  specs: {
+    cpu: String,
+    gpu: String,
+    ram: String,
+    storage: String,
+    monitor: String,
+    peripherals: [String]
+  },
+  status: { 
+    type: String, 
+    enum: ['available', 'occupied', 'maintenance', 'out-of-order'],
+    default: 'available'
+  },
+  currentUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  currentSessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'GamingSession' },
+  hourlyRate: { type: Number, default: 20000 },
+  isPremium: { type: Boolean, default: false },
+  lastMaintenance: Date,
+  maintenanceNotes: String,
+  zone: { type: String, enum: ['standard', 'vip', 'tournament'], default: 'standard' },
+  created: { type: Date, default: Date.now },
+  updated: { type: Date, default: Date.now }
+});
+
 const adminUserSchema = new mongoose.Schema({
   username: { 
     type: String, 
@@ -269,7 +285,6 @@ const adminUserSchema = new mongoose.Schema({
   }
 });
 
-// Hash admin password before saving
 adminUserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -282,7 +297,6 @@ adminUserSchema.pre('save', async function(next) {
   }
 });
 
-// Admin password comparison method
 adminUserSchema.methods.comparePassword = async function(candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
@@ -291,7 +305,6 @@ adminUserSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
-// Admin account locking methods
 adminUserSchema.methods.isLocked = function() {
   return !!(this.loginAttempts.lockUntil && this.loginAttempts.lockUntil > Date.now());
 };
@@ -324,8 +337,8 @@ const Report = mongoose.model('Report', reportSchema);
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);
 const Order = mongoose.model('Order', orderSchema);
 const GamingSession = mongoose.model('GamingSession', gamingSessionSchema);
+const GamingStation = mongoose.model('GamingStation', gamingStationSchema);
 const AdminUser = mongoose.model('AdminUser', adminUserSchema);
-
 
 app.use(cors({
   origin: [
@@ -333,15 +346,15 @@ app.use(cors({
     'http://localhost:5173', 
     'http://localhost:5174', 
     'http://localhost:3001',
-    'https://yourdomain.com',          
-    'https://www.yourdomain.com',       
-    'https://admin.yourdomain.com',     
-    'https://api.yourdomain.com'        
+    process.env.FRONTEND_URL,
+    process.env.ADMIN_URL,
+    process.env.RAILWAY_STATIC_URL,
+    /\.railway\.app$/
   ], 
   credentials: true
 }));
-app.use(express.json());
 
+app.use(express.json());
 
 const adminAuth = async (req, res, next) => {
   try {
@@ -376,14 +389,12 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-// Admin Login
 app.post('/api/admin/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
     console.log('Admin login attempt:', username);
     
-    // Find admin by username or email
     const admin = await AdminUser.findOne({ 
       $or: [{ username }, { email: username }] 
     });
@@ -395,7 +406,6 @@ app.post('/api/admin/auth/login', async (req, res) => {
       });
     }
     
-    // Check if account is locked
     if (admin.isLocked()) {
       return res.status(423).json({
         success: false,
@@ -403,7 +413,6 @@ app.post('/api/admin/auth/login', async (req, res) => {
       });
     }
     
-    // Check password
     const isValidPassword = await admin.comparePassword(password);
     if (!isValidPassword) {
       await admin.incLoginAttempts();
@@ -420,7 +429,6 @@ app.post('/api/admin/auth/login', async (req, res) => {
       });
     }
     
-    // Reset login attempts on successful login
     if (admin.loginAttempts.count > 0) {
       await admin.updateOne({
         $unset: {
@@ -431,11 +439,9 @@ app.post('/api/admin/auth/login', async (req, res) => {
       });
     }
     
-    // Update last login
     admin.lastLogin = new Date();
     await admin.save();
     
-    // Create JWT token
     const token = jwt.sign(
       { 
         adminId: admin._id, 
@@ -447,7 +453,7 @@ app.post('/api/admin/auth/login', async (req, res) => {
       { expiresIn: '8h' }
     );
     
-    console.log('Admin login successful:', username);
+    console.log('✅ Admin login successful:', username);
     
     res.json({ 
       success: true, 
@@ -465,7 +471,7 @@ app.post('/api/admin/auth/login', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Admin login error:', error);
+    console.error('❌ Admin login error:', error);
     res.status(500).json({ 
       success: false, 
       error: 'Admin login failed. Please try again.' 
@@ -473,10 +479,8 @@ app.post('/api/admin/auth/login', async (req, res) => {
   }
 });
 
-// Create initial admin (run once)
 app.post('/api/admin/setup', async (req, res) => {
   try {
-    // Check if any admin exists
     const existingAdmin = await AdminUser.findOne({});
     if (existingAdmin) {
       return res.status(400).json({ 
@@ -494,11 +498,10 @@ app.post('/api/admin/setup', async (req, res) => {
       });
     }
     
-    // Create initial super admin
     const admin = new AdminUser({
       username,
       email,
-      password, // Will be hashed by pre-save middleware
+      password,
       fullName,
       role: 'super_admin',
       permissions: {
@@ -512,7 +515,7 @@ app.post('/api/admin/setup', async (req, res) => {
     });
     
     await admin.save();
-    console.log('Initial admin created:', username);
+    console.log('✅ Initial admin created:', username);
     
     res.json({ 
       success: true, 
@@ -520,7 +523,7 @@ app.post('/api/admin/setup', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Admin setup error:', error);
+    console.error('❌ Admin setup error:', error);
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -534,30 +537,20 @@ app.post('/api/admin/setup', async (req, res) => {
   }
 });
 
-
-// Get all reports for admin
 app.get('/api/admin/reports', adminAuth, async (req, res) => {
   try {
     const { status, priority, category, limit = 100 } = req.query;
     
-    // Build filter
     const filter = {};
-    if (status && status !== 'all') {
-      filter.status = status;
-    }
-    if (priority && priority !== 'all') {
-      filter.priority = priority;
-    }
-    if (category && category !== 'all') {
-      filter.category = category;
-    }
+    if (status && status !== 'all') filter.status = status;
+    if (priority && priority !== 'all') filter.priority = priority;
+    if (category && category !== 'all') filter.category = category;
     
     const reports = await Report.find(filter)
       .sort({ submittedAt: -1 })
       .limit(parseInt(limit))
       .lean();
     
-    // Calculate stats
     const stats = {
       pending: await Report.countDocuments({ status: 'pending' }),
       investigating: await Report.countDocuments({ status: 'investigating' }),
@@ -566,7 +559,6 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
       total: await Report.countDocuments()
     };
     
-    // Format reports for admin UI
     const formattedReports = reports.map(report => ({
       id: report.id,
       title: report.title,
@@ -584,7 +576,7 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
       respondedAt: report.response ? report.updatedAt.toLocaleDateString() : null
     }));
     
-    console.log(`Admin fetched ${formattedReports.length} reports`);
+    console.log(`📋 Admin fetched ${formattedReports.length} reports`);
     
     res.json({
       success: true,
@@ -593,7 +585,7 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching admin reports:', error);
+    console.error('❌ Error fetching admin reports:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch reports'
@@ -601,7 +593,6 @@ app.get('/api/admin/reports', adminAuth, async (req, res) => {
   }
 });
 
-// Update report status (admin only)
 app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => {
   try {
     const { reportId } = req.params;
@@ -615,11 +606,8 @@ app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => 
     }
     
     const report = await Report.findOneAndUpdate(
-      { id: reportId }, // Use the custom 'id' field, not MongoDB's '_id'
-      { 
-        status,
-        updatedAt: new Date()
-      },
+      { id: reportId },
+      { status, updatedAt: new Date() },
       { new: true }
     );
     
@@ -630,7 +618,7 @@ app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => 
       });
     }
     
-    console.log(`Admin updated report ${reportId} status to ${status}`);
+    console.log(`📋 Admin updated report ${reportId} status to ${status}`);
     
     res.json({
       success: true,
@@ -638,7 +626,7 @@ app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => 
     });
     
   } catch (error) {
-    console.error('Error updating report status:', error);
+    console.error('❌ Error updating report status:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update report status'
@@ -646,11 +634,10 @@ app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => 
   }
 });
 
-// Add admin response to report
 app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) => {
   try {
     const { reportId } = req.params;
-    const { response, assignedTo } = req.body;
+    const { response } = req.body;
     
     if (!response || response.trim().length === 0) {
       return res.status(400).json({
@@ -660,11 +647,11 @@ app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) =
     }
     
     const report = await Report.findOneAndUpdate(
-      { id: reportId }, // Use the custom 'id' field, not MongoDB's '_id'
+      { id: reportId },
       {
         response: response.trim(),
         assignedTo: req.admin._id,
-        status: 'investigating', // Auto-set to investigating when responded
+        status: 'investigating',
         updatedAt: new Date()
       },
       { new: true }
@@ -677,7 +664,7 @@ app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) =
       });
     }
     
-    console.log(`Admin ${req.admin.username} responded to report ${reportId}`);
+    console.log(`📋 Admin ${req.admin.username} responded to report ${reportId}`);
     
     res.json({
       success: true,
@@ -685,7 +672,7 @@ app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) =
     });
     
   } catch (error) {
-    console.error('Error adding response:', error);
+    console.error('❌ Error adding response:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to add response'
@@ -693,13 +680,10 @@ app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) =
   }
 });
 
-
-// Get all users for admin
 app.get('/api/admin/users', adminAuth, async (req, res) => {
   try {
     const { status, limit = 100 } = req.query;
     
-    // Build filter
     const filter = {};
     if (status && status !== 'all') {
       filter.isActive = status === 'active';
@@ -711,7 +695,6 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
       .limit(parseInt(limit))
       .lean();
     
-    // Calculate user analytics
     const analytics = {
       totalUsers: await User.countDocuments(),
       activeUsers: await User.countDocuments({ isActive: true }),
@@ -729,7 +712,7 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('❌ Error fetching users:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch users'
@@ -737,7 +720,6 @@ app.get('/api/admin/users', adminAuth, async (req, res) => {
   }
 });
 
-// Update user status (activate/deactivate)
 app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -752,10 +734,7 @@ app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
     
     const user = await User.findByIdAndUpdate(
       userId,
-      { 
-        isActive,
-        updated: new Date()
-      },
+      { isActive, updated: new Date() },
       { new: true }
     ).select('-password');
     
@@ -766,7 +745,6 @@ app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
       });
     }
     
-    // If deactivating user, end any active gaming sessions
     if (!isActive) {
       await GamingSession.updateMany(
         { userId, status: 'active' },
@@ -782,7 +760,7 @@ app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error updating user status:', error);
+    console.error('❌ Error updating user status:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update user status'
@@ -790,90 +768,24 @@ app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
   }
 });
 
-// Get user details with gaming history
-app.get('/api/admin/users/:userId/details', adminAuth, async (req, res) => {
-  try {
-    const { userId } = req.params;
-    
-    const user = await User.findById(userId)
-      .select('-password')
-      .lean();
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-    
-    // Get user's gaming sessions
-    const gamingSessions = await GamingSession.find({ userId })
-      .sort({ created: -1 })
-      .limit(10)
-      .lean();
-    
-    // Get user's recent orders
-    const recentOrders = await Order.find({ userId })
-      .sort({ orderedAt: -1 })
-      .limit(10)
-      .lean();
-    
-    // Get user's reports
-    const userReports = await Report.find({ userId })
-      .sort({ submittedAt: -1 })
-      .limit(5)
-      .lean();
-    
-    res.json({
-      success: true,
-      user,
-      gamingSessions,
-      recentOrders,
-      userReports
-    });
-    
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch user details'
-    });
-  }
-});
-
-// ============================================================
-// 📦 ADMIN INVENTORY MANAGEMENT ENDPOINTS
-// ============================================================
-
-// Get all menu items for admin (with detailed analytics)
 app.get('/api/admin/menu-items', adminAuth, async (req, res) => {
   try {
     const { category, availability } = req.query;
     
-    // Build filter
     const filter = {};
-    if (category && category !== 'all') {
-      filter.category = category;
-    }
-    if (availability && availability !== 'all') {
-      filter.isAvailable = availability === 'available';
-    }
+    if (category && category !== 'all') filter.category = category;
+    if (availability && availability !== 'all') filter.isAvailable = availability === 'available';
     
-    const menuItems = await MenuItem.find(filter)
-      .sort({ created: -1 })
-      .lean();
+    const menuItems = await MenuItem.find(filter).sort({ created: -1 }).lean();
     
-    // Calculate analytics
     const analytics = {
       totalItems: await MenuItem.countDocuments(),
       availableItems: await MenuItem.countDocuments({ isAvailable: true }),
-      lowStockItems: await MenuItem.countDocuments({ 
-        stock: { $lte: 5, $gt: 0 } 
-      }),
+      lowStockItems: await MenuItem.countDocuments({ stock: { $lte: 5, $gt: 0 } }),
       outOfStockItems: await MenuItem.countDocuments({ stock: 0 })
     };
     
-    console.log(`Admin fetched ${menuItems.length} menu items`);
+    console.log(`📦 Admin fetched ${menuItems.length} menu items`);
     
     res.json({
       success: true,
@@ -882,7 +794,7 @@ app.get('/api/admin/menu-items', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching admin menu items:', error);
+    console.error('❌ Error fetching admin menu items:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch menu items'
@@ -890,7 +802,6 @@ app.get('/api/admin/menu-items', adminAuth, async (req, res) => {
   }
 });
 
-// Update stock only (for quick stock updates)
 app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
@@ -908,8 +819,6 @@ app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => 
       { 
         stock: parseInt(stock),
         updated: new Date(),
-        updatedBy: req.admin._id,
-        // Auto-update availability based on stock
         isAvailable: parseInt(stock) > 0
       },
       { new: true }
@@ -922,7 +831,7 @@ app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => 
       });
     }
     
-    console.log(`Admin updated stock for ${menuItem.name}: ${stock}`);
+    console.log(`📦 Admin updated stock for ${menuItem.name}: ${stock}`);
     
     res.json({
       success: true,
@@ -930,7 +839,7 @@ app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => 
     });
     
   } catch (error) {
-    console.error('Error updating stock:', error);
+    console.error('❌ Error updating stock:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update stock'
@@ -938,12 +847,10 @@ app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => 
   }
 });
 
-// Create new menu item (admin only)
 app.post('/api/admin/menu-items', adminAuth, async (req, res) => {
   try {
     const { name, price, category, description, image, stock, isAvailable } = req.body;
     
-    // Validation
     if (!name || !price || !category || !description || stock === undefined) {
       return res.status(400).json({
         success: false,
@@ -958,13 +865,12 @@ app.post('/api/admin/menu-items', adminAuth, async (req, res) => {
       description: description.trim(),
       image: image || '🍽️',
       stock: parseInt(stock),
-      isAvailable: isAvailable !== false,
-      createdBy: req.admin._id
+      isAvailable: isAvailable !== false
     });
     
     await newMenuItem.save();
     
-    console.log(`Admin created menu item: ${name}`);
+    console.log(`📦 Admin created menu item: ${name}`);
     
     res.status(201).json({
       success: true,
@@ -973,7 +879,7 @@ app.post('/api/admin/menu-items', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error creating menu item:', error);
+    console.error('❌ Error creating menu item:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to create menu item'
@@ -981,60 +887,6 @@ app.post('/api/admin/menu-items', adminAuth, async (req, res) => {
   }
 });
 
-// Update menu item (admin only)
-app.put('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    const { name, price, category, description, image, stock, isAvailable } = req.body;
-    
-    const updateData = {
-      name: name?.trim(),
-      price: price ? parseFloat(price) : undefined,
-      category: category?.toLowerCase(),
-      description: description?.trim(),
-      image,
-      stock: stock !== undefined ? parseInt(stock) : undefined,
-      isAvailable,
-      updated: new Date(),
-      updatedBy: req.admin._id
-    };
-    
-    // Remove undefined values
-    Object.keys(updateData).forEach(key => 
-      updateData[key] === undefined && delete updateData[key]
-    );
-    
-    const menuItem = await MenuItem.findByIdAndUpdate(
-      itemId,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    
-    if (!menuItem) {
-      return res.status(404).json({
-        success: false,
-        error: 'Menu item not found'
-      });
-    }
-    
-    console.log(`Admin updated menu item: ${menuItem.name}`);
-    
-    res.json({
-      success: true,
-      message: 'Menu item updated successfully',
-      menuItem
-    });
-    
-  } catch (error) {
-    console.error('Error updating menu item:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to update menu item'
-    });
-  }
-});
-
-// Delete menu item (admin only)
 app.delete('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
@@ -1048,7 +900,7 @@ app.delete('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
       });
     }
     
-    console.log(`Admin deleted menu item: ${menuItem.name}`);
+    console.log(`📦 Admin deleted menu item: ${menuItem.name}`);
     
     res.json({
       success: true,
@@ -1056,7 +908,7 @@ app.delete('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error deleting menu item:', error);
+    console.error('❌ Error deleting menu item:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete menu item'
@@ -1064,28 +916,18 @@ app.delete('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
   }
 });
 
-// Get comprehensive dashboard analytics
 app.get('/api/admin/analytics', adminAuth, async (req, res) => {
   try {
     const { period = '7d' } = req.query;
     
-    // Calculate date range based on period
     let startDate;
     switch (period) {
-      case '24h':
-        startDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        break;
-      case '7d':
-        startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case '30d':
-        startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      case '24h': startDate = new Date(Date.now() - 24 * 60 * 60 * 1000); break;
+      case '7d': startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); break;
+      case '30d': startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); break;
+      default: startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     }
     
-    // User analytics
     const userAnalytics = {
       totalUsers: await User.countDocuments(),
       activeUsers: await User.countDocuments({ isActive: true }),
@@ -1093,7 +935,6 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
       currentlyGaming: await GamingSession.countDocuments({ status: 'active' })
     };
     
-    // Order analytics
     const orderAnalytics = {
       totalOrders: await Order.countDocuments(),
       recentOrders: await Order.countDocuments({ orderedAt: { $gte: startDate } }),
@@ -1104,7 +945,6 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
       pendingOrders: await Order.countDocuments({ paymentStatus: 'pending' })
     };
     
-    // Revenue analytics
     const revenueResult = await Order.aggregate([
       { 
         $match: { 
@@ -1123,17 +963,13 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
     
     const revenue = revenueResult.length > 0 ? revenueResult[0] : { totalRevenue: 0, averageOrderValue: 0 };
     
-    // Inventory analytics
     const inventoryAnalytics = {
       totalItems: await MenuItem.countDocuments(),
       availableItems: await MenuItem.countDocuments({ isAvailable: true }),
-      lowStockItems: await MenuItem.countDocuments({ 
-        stock: { $lte: 5, $gt: 0 } 
-      }),
+      lowStockItems: await MenuItem.countDocuments({ stock: { $lte: 5, $gt: 0 } }),
       outOfStockItems: await MenuItem.countDocuments({ stock: 0 })
     };
     
-    // Reports analytics
     const reportsAnalytics = {
       totalReports: await Report.countDocuments(),
       pendingReports: await Report.countDocuments({ status: 'pending' }),
@@ -1144,7 +980,7 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
       escalatedReports: await Report.countDocuments({ status: 'escalated' })
     };
     
-    console.log(`Admin fetched analytics for period: ${period}`);
+    console.log(`📊 Admin fetched analytics for period: ${period}`);
     
     res.json({
       success: true,
@@ -1162,7 +998,7 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching analytics:', error);
+    console.error('❌ Error fetching analytics:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch analytics'
@@ -1170,19 +1006,13 @@ app.get('/api/admin/analytics', adminAuth, async (req, res) => {
   }
 });
 
-// Get all orders for admin
 app.get('/api/admin/orders', adminAuth, async (req, res) => {
   try {
     const { status, orderType, limit = 50 } = req.query;
     
-    // Build filter
     const filter = {};
-    if (status && status !== 'all') {
-      filter.orderStatus = status;
-    }
-    if (orderType && orderType !== 'all') {
-      filter.checkoutType = orderType;
-    }
+    if (status && status !== 'all') filter.orderStatus = status;
+    if (orderType && orderType !== 'all') filter.checkoutType = orderType;
     
     const orders = await Order.find(filter)
       .populate('userId', 'fullName email')
@@ -1190,7 +1020,6 @@ app.get('/api/admin/orders', adminAuth, async (req, res) => {
       .limit(parseInt(limit))
       .lean();
     
-    // Calculate order analytics
     const analytics = {
       totalOrders: await Order.countDocuments(),
       pendingOrders: await Order.countDocuments({ orderStatus: 'pending' }),
@@ -1200,7 +1029,7 @@ app.get('/api/admin/orders', adminAuth, async (req, res) => {
       })
     };
     
-    console.log(`Admin fetched ${orders.length} orders`);
+    console.log(`🛒 Admin fetched ${orders.length} orders`);
     
     res.json({
       success: true,
@@ -1209,7 +1038,7 @@ app.get('/api/admin/orders', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error('❌ Error fetching orders:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch orders'
@@ -1217,7 +1046,6 @@ app.get('/api/admin/orders', adminAuth, async (req, res) => {
   }
 });
 
-// Update order status (admin)
 app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -1231,18 +1059,9 @@ app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
       });
     }
     
-    const updateData = {
-      orderStatus,
-      processedBy: req.admin._id
-    };
-    
-    if (notes) {
-      updateData.adminNotes = notes;
-    }
-    
-    if (orderStatus === 'delivered') {
-      updateData.completedAt = new Date();
-    }
+    const updateData = { orderStatus, processedBy: req.admin._id };
+    if (notes) updateData.adminNotes = notes;
+    if (orderStatus === 'delivered') updateData.completedAt = new Date();
     
     const order = await Order.findOneAndUpdate(
       { orderId },
@@ -1257,7 +1076,7 @@ app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
       });
     }
     
-    console.log(`Admin updated order ${orderId} status to ${orderStatus}`);
+    console.log(`🛒 Admin updated order ${orderId} status to ${orderStatus}`);
     
     res.json({
       success: true,
@@ -1265,7 +1084,7 @@ app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error('❌ Error updating order status:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update order status'
@@ -1273,94 +1092,6 @@ app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
   }
 });
 
-// Initialize default data for admin
-app.post('/api/admin/initialize-data', adminAuth, async (req, res) => {
-  try {
-    // Check if menu items exist
-    const menuCount = await MenuItem.countDocuments();
-    let createdItems = 0;
-    
-    if (menuCount === 0) {
-      const defaultMenuItems = [
-        { name: "Chicken Wings", price: 45000, category: "snacks", description: "6 pieces of spicy or BBQ wings", image: "🍗", stock: 50, isAvailable: true },
-        { name: "French Fries", price: 25000, category: "snacks", description: "Crispy fries with dipping sauce", image: "🍟", stock: 30, isAvailable: true },
-        { name: "Nachos", price: 35000, category: "snacks", description: "Tortilla chips with cheese and salsa", image: "🧀", stock: 25, isAvailable: true },
-        { name: "Cheeseburger", price: 55000, category: "meals", description: "Beef patty with cheese and veggies", image: "🍔", stock: 20, isAvailable: true },
-        { name: "Pizza Slice", price: 40000, category: "meals", description: "Large pepperoni pizza slice", image: "🍕", stock: 15, isAvailable: true },
-        { name: "Chicken Sandwich", price: 50000, category: "meals", description: "Grilled chicken with lettuce and mayo", image: "🥪", stock: 18, isAvailable: true },
-        { name: "Fried Rice", price: 45000, category: "meals", description: "Indonesian style fried rice", image: "🍚", stock: 22, isAvailable: true },
-        { name: "Soda", price: 15000, category: "drinks", description: "Various flavors available", image: "🥤", stock: 100, isAvailable: true },
-        { name: "Coffee", price: 25000, category: "drinks", description: "Hot or iced coffee", image: "☕", stock: 40, isAvailable: true },
-        { name: "Energy Drink", price: 30000, category: "drinks", description: "Stay energized while gaming", image: "⚡", stock: 35, isAvailable: true },
-        { name: "Ice Cream", price: 20000, category: "desserts", description: "Chocolate or vanilla", image: "🍦", stock: 25, isAvailable: true },
-        { name: "Brownie", price: 25000, category: "desserts", description: "Rich chocolate brownie", image: "🍫", stock: 20, isAvailable: true }
-      ];
-      
-      for (const item of defaultMenuItems) {
-        const menuItem = new MenuItem({
-          ...item,
-          createdBy: req.admin._id
-        });
-        await menuItem.save();
-        createdItems++;
-      }
-    }
-    
-    console.log(`Admin initialized ${createdItems} default menu items`);
-    
-    res.json({
-      success: true,
-      message: `Initialization complete. Created ${createdItems} menu items.`,
-      data: {
-        menuItemsCreated: createdItems,
-        existingMenuItems: menuCount
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error initializing data:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to initialize data'
-    });
-  }
-});
-
-// Get system statistics
-app.get('/api/admin/system-stats', adminAuth, async (req, res) => {
-  try {
-    const stats = {
-      database: {
-        users: await User.countDocuments(),
-        menuItems: await MenuItem.countDocuments(),
-        orders: await Order.countDocuments(),
-        reports: await Report.countDocuments(),
-        gamingSessions: await GamingSession.countDocuments(),
-        adminUsers: await AdminUser.countDocuments()
-      },
-      system: {
-        serverUptime: process.uptime(),
-        nodeVersion: process.version,
-        memoryUsage: process.memoryUsage(),
-        timestamp: new Date().toISOString()
-      }
-    };
-    
-    res.json({
-      success: true,
-      stats
-    });
-    
-  } catch (error) {
-    console.error('❌ Error fetching system stats:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch system statistics'
-    });
-  }
-});
-
-// Function to create default admin user
 async function createDefaultAdmin() {
   try {
     const count = await AdminUser.countDocuments();
@@ -1369,8 +1100,8 @@ async function createDefaultAdmin() {
       
       const defaultAdmin = new AdminUser({
         username: 'admin',
-        email: 'admin@ichi.com',
-        password: 'admin123', // Will be hashed by pre-save middleware
+        email: 'admin@gamingcafe.com',
+        password: 'admin123',
         fullName: 'System Administrator',
         role: 'super_admin',
         permissions: {
@@ -1384,25 +1115,48 @@ async function createDefaultAdmin() {
       });
       
       await defaultAdmin.save();
-      console.log('Default admin created - Username: admin, Password: admin123');
+      console.log('✅ Default admin created - Username: admin, Password: admin123');
     }
   } catch (error) {
-    console.error('Error creating default admin:', error);
+    console.error('❌ Error creating default admin:', error);
   }
 }
 
-// Initialize database with default data
-async function initializeDatabase() {
-  await createDefaultAdmin();
+async function seedDefaultMenuItems() {
+  try {
+    const count = await MenuItem.countDocuments();
+    if (count === 0) {
+      console.log('🌱 Seeding default menu items...');
+      
+      const defaultMenuItems = [
+        { name: "Chicken Wings", price: 45000, category: "snacks", description: "6 pieces of spicy or BBQ wings", image: "🍗", stock: 50, isAvailable: true },
+        { name: "French Fries", price: 25000, category: "snacks", description: "Crispy fries with dipping sauce", image: "🍟", stock: 30, isAvailable: true },
+        { name: "Nachos", price: 35000, category: "snacks", description: "Tortilla chips with cheese and salsa", image: "🧀", stock: 25, isAvailable: true },
+        { name: "Cheeseburger", price: 55000, category: "meals", description: "Beef patty with cheese and veggies", image: "🍔", stock: 20, isAvailable: true },
+        { name: "Pizza Slice", price: 40000, category: "meals", description: "Large pepperoni pizza slice", image: "🍕", stock: 15, isAvailable: true },
+        { name: "Soda", price: 15000, category: "drinks", description: "Various flavors available", image: "🥤", stock: 100, isAvailable: true },
+        { name: "Coffee", price: 25000, category: "drinks", description: "Hot or iced coffee", image: "☕", stock: 40, isAvailable: true },
+        { name: "Energy Drink", price: 30000, category: "drinks", description: "Stay energized while gaming", image: "⚡", stock: 35, isAvailable: true }
+      ];
+      
+      await MenuItem.insertMany(defaultMenuItems);
+      console.log('✅ Default menu items seeded successfully');
+    }
+  } catch (error) {
+    console.error('❌ Error seeding menu items:', error);
+  }
 }
 
-// Run initialization after MongoDB connection
+async function initializeDatabase() {
+  await createDefaultAdmin();
+  await seedDefaultMenuItems();
+}
+
 mongoose.connection.once('open', async () => {
   console.log('🚀 Admin database connected, initializing default data...');
   await initializeDatabase();
 });
 
-// Enhanced health check endpoint
 app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
   const stateMap = {
@@ -1414,62 +1168,34 @@ app.get('/api/health', (req, res) => {
   
   res.json({ 
     status: 'ok', 
-    server: 'admin-server',
+    server: 'gaming-cafe-admin-server',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production',
     database: {
       state: stateMap[dbState] || 'unknown',
-      name: mongoose.connection.db?.databaseName || 'unknown',
-      host: mongoose.connection.host || 'unknown',
-      port: mongoose.connection.port || 'unknown'
+      name: mongoose.connection.db?.databaseName || 'unknown'
     },
-    tunnel: {
-      enabled: process.env.MONGODB_URI?.includes('db.') ? true : false,
-      url: process.env.MONGODB_URI?.replace(/:[^:@]*@/, ':***@') || 'not set'
-    },
-    environment: process.env.NODE_ENV || 'development',
     uptime: process.uptime(),
-    endpoints: {
-      admin: {
-        login: '/api/admin/auth/login (POST)',
-        setup: '/api/admin/setup (POST)',
-        reports: '/api/admin/reports (GET)',
-        updateReportStatus: '/api/admin/reports/:reportId/status (PATCH)',
-        addReportResponse: '/api/admin/reports/:reportId/response (PATCH)',
-        users: '/api/admin/users (GET)',
-        userDetails: '/api/admin/users/:userId/details (GET)',
-        updateUserStatus: '/api/admin/users/:userId/status (PATCH)',
-        menuItems: '/api/admin/menu-items (GET, POST, PUT, DELETE)',
-        updateStock: '/api/admin/menu-items/:itemId/stock (PATCH)',
-        orders: '/api/admin/orders (GET)',
-        updateOrderStatus: '/api/admin/orders/:orderId/status (PATCH)',
-        analytics: '/api/admin/analytics (GET)',
-        systemStats: '/api/admin/system-stats (GET)',
-        initializeData: '/api/admin/initialize-data (POST)'
-      }
-    }
+    version: '2.0.0'
   });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Admin server error:', err);
+  console.error('❌ Admin server error:', err);
   res.status(500).json({ error: 'Internal admin server error' });
 });
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Admin endpoint not found' });
 });
 
-// Start the admin server
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Admin backend server running on port ${PORT}`);
+  console.log(`🚀 Gaming Cafe Admin Server running on port ${PORT}`);
   console.log(`📍 Admin Server URL: http://localhost:${PORT}`);
   console.log(`🏥 Admin Health check: http://localhost:${PORT}/api/health`);
-  console.log(`💾 Database: ${mongoose.connection.db?.databaseName}`);
   console.log(`🕐 Started at: ${new Date().toISOString()}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
+  console.log(`👤 Default admin: admin/admin123`);
 });
-
-module.exports = app;
 
 module.exports = app;

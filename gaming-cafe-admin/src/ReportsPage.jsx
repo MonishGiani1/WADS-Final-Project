@@ -8,7 +8,6 @@ export default function ReportsPage() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data - replace with real API calls
   const [reports, setReports] = useState({
     gaming: [
       {
@@ -132,7 +131,6 @@ export default function ReportsPage() {
     ]
   });
 
-  // Summary statistics
   const [stats, setStats] = useState({
     totalRevenue: "Rp 2,450,000",
     activeUsers: 12,
@@ -140,7 +138,6 @@ export default function ReportsPage() {
     avgSessionTime: "2h 15m"
   });
 
-  // Tab configuration
   const tabs = [
     {
       id: "gaming",
@@ -168,7 +165,6 @@ export default function ReportsPage() {
     }
   ];
 
-  // Date range options
   const dateRanges = [
     { id: "today", name: "Today" },
     { id: "yesterday", name: "Yesterday" },
@@ -177,13 +173,11 @@ export default function ReportsPage() {
     { id: "custom", name: "Custom Range" }
   ];
 
-  // Filter and sort data
   const getFilteredData = () => {
     if (activeTab === "analytics") return [];
     
     let data = reports[activeTab] || [];
     
-    // Apply search filter
     if (searchQuery) {
       data = data.filter(item => 
         item.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -192,7 +186,6 @@ export default function ReportsPage() {
       );
     }
     
-    // Apply sorting
     data = [...data].sort((a, b) => {
       let aVal, bVal;
       
@@ -224,7 +217,6 @@ export default function ReportsPage() {
     return data;
   };
 
-  // Export data function
   const handleExport = () => {
     const data = getFilteredData();
     const csvContent = "data:text/csv;charset=utf-8," + 
@@ -263,7 +255,6 @@ export default function ReportsPage() {
       marginBottom: "2rem"
     },
     
-    // Stats Cards
     statsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -287,7 +278,6 @@ export default function ReportsPage() {
       color: "#9CA3AF"
     },
     
-    // Tabs
     tabsContainer: {
       display: "flex",
       overflowX: "auto",
@@ -315,7 +305,6 @@ export default function ReportsPage() {
       borderBottomColor: "transparent"
     },
     
-    // Controls
     controlsSection: {
       display: "flex",
       justifyContent: "space-between",
@@ -368,7 +357,6 @@ export default function ReportsPage() {
       color: "#D1D5DB"
     },
     
-    // Table
     tableContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -420,7 +408,6 @@ export default function ReportsPage() {
       color: "white"
     },
     
-    // Analytics
     analyticsContainer: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -598,7 +585,6 @@ export default function ReportsPage() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>Reports & Analytics</h1>
         <p style={styles.subtitle}>
@@ -606,7 +592,6 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={styles.statValue}>{stats.totalRevenue}</div>
@@ -626,7 +611,6 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabsContainer}>
         {tabs.map((tab) => (
           <div
@@ -643,7 +627,6 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      {/* Controls */}
       <div style={styles.controlsSection}>
         <div style={styles.leftControls}>
           <select
@@ -694,7 +677,6 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Content */}
       {activeTab !== "analytics" ? (
         <div style={styles.tableContainer}>
           {renderTabContent()}

@@ -12,7 +12,6 @@ export default function AdminSystemControl() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock stations data
   const [stations, setStations] = useState([
     {
       id: "PC-01",
@@ -111,7 +110,6 @@ export default function AdminSystemControl() {
     }
   ]);
 
-  // Mock network data
   const [networkData, setNetworkData] = useState({
     internetSpeed: "950 Mbps",
     latency: "12ms",
@@ -121,7 +119,6 @@ export default function AdminSystemControl() {
     status: "optimal"
   });
 
-  // Mock maintenance schedule
   const [maintenanceSchedule, setMaintenanceSchedule] = useState([
     {
       id: "MAINT-001",
@@ -155,12 +152,10 @@ export default function AdminSystemControl() {
     }
   ]);
 
-  // Handle station actions
   const handleStationAction = async (stationId, action) => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       switch (action) {
@@ -208,7 +203,6 @@ export default function AdminSystemControl() {
     }
   };
 
-  // Handle network operations
   const handleNetworkAction = async (action) => {
     setIsLoading(true);
     
@@ -257,7 +251,6 @@ export default function AdminSystemControl() {
       marginBottom: "2rem"
     },
 
-    // System Stats Cards
     statsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -289,7 +282,6 @@ export default function AdminSystemControl() {
       opacity: "0.6"
     },
 
-    // Tabs
     tabsContainer: {
       display: "flex",
       gap: "0.5rem",
@@ -313,7 +305,6 @@ export default function AdminSystemControl() {
       color: "#D1D5DB"
     },
 
-    // Stations Grid
     stationsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
@@ -397,7 +388,6 @@ export default function AdminSystemControl() {
       minWidth: "80px"
     },
 
-    // Network Section
     networkContainer: {
       display: "grid",
       gridTemplateColumns: "2fr 1fr",
@@ -438,7 +428,6 @@ export default function AdminSystemControl() {
       color: "white"
     },
 
-    // Maintenance Table
     maintenanceContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -473,7 +462,6 @@ export default function AdminSystemControl() {
       textTransform: "uppercase"
     },
 
-    // Station Detail Modal
     modal: {
       position: "fixed",
       top: 0,
@@ -580,7 +568,6 @@ export default function AdminSystemControl() {
     }
   };
 
-  // Add CSS animation
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -623,7 +610,6 @@ export default function AdminSystemControl() {
 
   const renderStationsTab = () => (
     <>
-      {/* System Stats */}
       <div style={styles.statsGrid}>
         <div style={styles.statCard}>
           <div style={{...styles.statIcon, color: "#10B981"}}>🖥️</div>
@@ -647,7 +633,6 @@ export default function AdminSystemControl() {
         </div>
       </div>
 
-      {/* Stations Grid */}
       <div style={styles.stationsGrid}>
         {stations.map((station) => (
           <div
@@ -935,7 +920,6 @@ export default function AdminSystemControl() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>System Control Center</h1>
         <p style={styles.subtitle}>
@@ -943,7 +927,6 @@ export default function AdminSystemControl() {
         </p>
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabsContainer}>
         {[
           { id: "stations", name: "🖥️ Stations" },
@@ -963,12 +946,10 @@ export default function AdminSystemControl() {
         ))}
       </div>
 
-      {/* Tab Content */}
       {activeTab === "stations" && renderStationsTab()}
       {activeTab === "network" && renderNetworkTab()}
       {activeTab === "maintenance" && renderMaintenanceTab()}
 
-      {/* Station Detail Modal */}
       {selectedStation && (
         <div style={styles.modal} onClick={() => setSelectedStation(null)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -982,7 +963,6 @@ export default function AdminSystemControl() {
               </button>
             </div>
             
-            {/* Station Status */}
             <div style={{marginBottom: "1.5rem"}}>
               <div style={{display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem"}}>
                 <span style={{
@@ -1008,7 +988,6 @@ export default function AdminSystemControl() {
               )}
             </div>
 
-            {/* Hardware Specifications */}
             <div style={{marginBottom: "1.5rem"}}>
               <h4 style={{fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem"}}>
                 Hardware Specifications
@@ -1033,7 +1012,6 @@ export default function AdminSystemControl() {
               </div>
             </div>
 
-            {/* Performance Metrics */}
             <div style={{marginBottom: "1.5rem"}}>
               <h4 style={{fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem"}}>
                 Current Performance
@@ -1078,7 +1056,6 @@ export default function AdminSystemControl() {
               </div>
             </div>
 
-            {/* Issues */}
             {selectedStation.issues.length > 0 && (
               <div style={{marginBottom: "1.5rem"}}>
                 <h4 style={{fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem", color: "#EF4444"}}>
@@ -1092,7 +1069,6 @@ export default function AdminSystemControl() {
               </div>
             )}
 
-            {/* Maintenance Info */}
             <div style={{marginBottom: "1.5rem"}}>
               <h4 style={{fontSize: "1.125rem", fontWeight: "600", marginBottom: "1rem"}}>
                 Maintenance Information
@@ -1102,7 +1078,6 @@ export default function AdminSystemControl() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div style={{display: "flex", gap: "1rem", flexWrap: "wrap"}}>
               {selectedStation.status === "active" && (
                 <>

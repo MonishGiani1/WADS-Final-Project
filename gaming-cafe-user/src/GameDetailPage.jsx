@@ -5,10 +5,8 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
   const [screenshots, setScreenshots] = useState([]);
   const [currentScreenshot, setCurrentScreenshot] = useState(0);
 
-  // Use either external isLaunching prop or local state
   const launching = isLaunching || localLaunching;
 
-  // Enhanced game data with additional details
   const gameDetails = {
     ...game,
     rating: "4.8",
@@ -23,7 +21,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
     screenshots: getScreenshots(game.name)
   };
 
-  // Mock functions to get additional game data
   function getPublisher(gameName) {
     const publishers = {
       "Valorant": "Riot Games",
@@ -125,7 +122,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
   }
 
   function getScreenshots(gameName) {
-    // Generate placeholder screenshots
     return [
       `/api/placeholder/800/450`,
       `/api/placeholder/800/450`,
@@ -138,7 +134,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
     setLocalLaunching(true);
     
     try {
-      // Method 1: Try direct executable launch via backend
       if (game.executablePath) {
         console.log(`🎮 Attempting to launch ${game.name} via executable: ${game.executablePath}`);
         
@@ -157,7 +152,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
           const result = await response.json();
           if (result.success) {
             alert(`✅ ${game.name} is launching!`);
-            // Call the parent's onLaunch function
             if (onLaunch) onLaunch(game);
             return;
           } else {
@@ -166,14 +160,12 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
         }
       }
 
-      // Method 2: Try URL protocol launch (Steam, Battle.net, etc.)
       if (game.launchUrl) {
         console.log(`🚀 Launching ${game.name} via URL protocol: ${game.launchUrl}`);
         
         try {
           window.location.href = game.launchUrl;
           
-          // Show success message after a short delay
           setTimeout(() => {
             alert(`🚀 Launching ${game.name} via ${
               game.launchUrl.includes('steam') ? 'Steam' :
@@ -185,7 +177,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
             }!`);
           }, 1000);
           
-          // Call the parent's onLaunch function
           if (onLaunch) onLaunch(game);
           return;
         } catch (error) {
@@ -193,7 +184,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
         }
       }
 
-      // Method 3: Fallback - open web version or store page
       const fallbackUrls = {
         "Fortnite": "https://www.fortnite.com/",
         "Minecraft": "https://www.minecraft.net/play",
@@ -217,7 +207,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
         window.open(fallbackUrls[game.name], '_blank');
         alert(`🌐 Opening ${game.name} web page. Please launch the game from there.`);
         
-        // Call the parent's onLaunch function
         if (onLaunch) onLaunch(game);
       } else {
         alert(`❌ Could not launch ${game.name}. Please start the game manually.`);
@@ -430,7 +419,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
 
   return (
     <div style={styles.container}>
-      {/* Header Section */}
       <div style={styles.header}>
         <img 
           src={game.image || "/api/placeholder/800/400"} 
@@ -484,12 +472,9 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
         </div>
       </div>
 
-      {/* Content Section */}
       <div style={styles.content}>
         <div style={styles.contentGrid}>
-          {/* Main Content */}
           <div style={styles.mainContent}>
-            {/* About */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>About {gameDetails.name}</h2>
               <div style={styles.sectionContent}>
@@ -501,7 +486,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
               </div>
             </div>
 
-            {/* Screenshots */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>Screenshots</h2>
               <div style={styles.screenshotsGrid}>
@@ -516,7 +500,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
               </div>
             </div>
 
-            {/* System Requirements */}
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>System Requirements</h2>
               <div style={styles.requirementsList}>
@@ -532,9 +515,7 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
             </div>
           </div>
 
-          {/* Sidebar */}
           <div style={styles.sidebar}>
-            {/* Game Info */}
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Game Info</h3>
               <div>
@@ -561,7 +542,6 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
               </div>
             </div>
 
-            {/* Features */}
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Features</h3>
               <div style={styles.featuresGrid}>

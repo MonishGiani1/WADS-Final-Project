@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 import CheckoutPage from "./CheckoutPage";
 
 export default function FoodPage() {
-  // Track active category and cart items with useState hooks
   const [activeCategory, setActiveCategory] = useState("all");
   const [cart, setCart] = useState([]);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [showCheckout, setShowCheckout] = useState(false);
   
-  // 🔥 DATABASE INTEGRATION: Menu items and loading states
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([
     { id: "all", name: "All" }
@@ -16,14 +14,12 @@ export default function FoodPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Add window resize listener
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // 🔥 DATABASE INTEGRATION: Load menu items from database
   useEffect(() => {
     const loadMenuItems = async () => {
       try {
@@ -34,7 +30,6 @@ export default function FoodPage() {
           const data = await response.json();
           setMenuItems(data.menuItems || []);
           
-          // Extract unique categories from menu items
           const uniqueCategories = [...new Set(data.menuItems.map(item => item.category))];
           const categoryOptions = [
             { id: "all", name: "All" },
@@ -45,13 +40,11 @@ export default function FoodPage() {
           ];
           setCategories(categoryOptions);
         } else {
-          // Fallback to default menu items if API fails
           loadFallbackMenu();
         }
       } catch (error) {
         console.error('Error loading menu items:', error);
         setError('Failed to load menu items');
-        // Use fallback menu
         loadFallbackMenu();
       } finally {
         setIsLoading(false);
@@ -61,7 +54,6 @@ export default function FoodPage() {
     loadMenuItems();
   }, []);
 
-  // 🔥 FALLBACK MENU: In case database is not available
   const loadFallbackMenu = () => {
     const fallbackMenu = [
       { id: 1, name: "Chicken Wings", price: 45000, category: "snacks", description: "6 pieces of spicy or BBQ wings", image: "🍗", stock: 50, isAvailable: true },
@@ -90,7 +82,6 @@ export default function FoodPage() {
     setCategories(fallbackCategories);
   };
 
-  // 🔥 DATABASE INTEGRATION: Update menu item stock after order
   const updateMenuItemStock = async (items) => {
     try {
       await fetch('/api/menu-items/update-stock', {
@@ -102,7 +93,6 @@ export default function FoodPage() {
         body: JSON.stringify({ orderItems: items })
       });
       
-      // Refresh menu items to show updated stock
       const response = await fetch('/api/menu-items');
       if (response.ok) {
         const data = await response.json();
@@ -113,25 +103,20 @@ export default function FoodPage() {
     }
   };
   
-  // Filter menu items based on active category
   const filteredItems = activeCategory === "all" 
-    ? menuItems.filter(item => item.isAvailable !== false) // Only show available items
+    ? menuItems.filter(item => item.isAvailable !== false)
     : menuItems.filter(item => item.category === activeCategory && item.isAvailable !== false);
   
-  // Format price to Indonesian Rupiah
   const formatPrice = (price) => {
     return `Rp ${price.toLocaleString('id-ID')}`;
   };
   
-  // 🔥 DATABASE INTEGRATION: Enhanced add to cart with stock checking
   const handleAddToCart = (item) => {
-    // Check stock availability
     if (item.stock !== undefined && item.stock <= 0) {
       alert(`Sorry, ${item.name} is out of stock!`);
       return;
     }
     
-    // Check if adding one more would exceed stock
     const itemInCart = cart.find(cartItem => cartItem.id === item.id);
     const currentQuantityInCart = itemInCart ? itemInCart.quantity : 0;
     
@@ -141,7 +126,6 @@ export default function FoodPage() {
     }
     
     if (itemInCart) {
-      // Item exists, update quantity
       const newCart = cart.map(cartItem => {
         if (cartItem.id === item.id) {
           return {...cartItem, quantity: cartItem.quantity + 1};
@@ -150,20 +134,16 @@ export default function FoodPage() {
       });
       setCart(newCart);
     } else {
-      // Item doesn't exist, add with quantity 1
       setCart([...cart, {...item, quantity: 1}]);
     }
   };
   
-  // Remove item from cart
   const handleRemoveFromCart = (itemId) => {
     const itemInCart = cart.find(item => item.id === itemId);
     
     if (itemInCart.quantity === 1) {
-      // Only 1 quantity, remove completely
       setCart(cart.filter(item => item.id !== itemId));
     } else {
-      // Decrease quantity
       setCart(cart.map(item => {
         if (item.id === itemId) {
           return {...item, quantity: item.quantity - 1};
@@ -173,12 +153,10 @@ export default function FoodPage() {
     }
   };
   
-  // Calculate cart total
   const cartTotal = cart.reduce((total, item) => {
     return total + (item.price * item.quantity);
   }, 0);
 
-  // Handle checkout initiation
   const handleCheckout = () => {
     if (cart.length > 0) {
       setShowCheckout(true);
@@ -187,25 +165,19 @@ export default function FoodPage() {
     }
   };
   
-  // 🔥 DATABASE INTEGRATION: Handle checkout completion with stock update
   const handleCheckoutComplete = async () => {
-    // Update stock levels in database
     await updateMenuItemStock(cart);
     
-    // Clear cart and close checkout
     setCart([]);
     setShowCheckout(false);
     
-    // Show success message
     alert("🍕 Order placed successfully! Your food will be delivered to your gaming station.");
   };
   
-  // Handle checkout cancellation
   const handleCheckoutCancel = () => {
     setShowCheckout(false);
   };
 
-  // Custom styles with !important to override conflicts
   const styles = {
     container: {
       width: "100%",
@@ -455,7 +427,6 @@ export default function FoodPage() {
     }
   };
 
-  // Media query for responsive layout
   const getLayoutStyle = () => {
     return windowWidth >= 1024 
       ? { 
@@ -466,17 +437,14 @@ export default function FoodPage() {
       : styles.mainLayout;
   };
 
-  // 🔥 HELPER FUNCTION: Check if item is low stock
   const isLowStock = (stock) => {
     return stock !== undefined && stock > 0 && stock <= 5;
   };
 
-  // 🔥 HELPER FUNCTION: Check if item is out of stock
   const isOutOfStock = (item) => {
     return item.stock !== undefined && item.stock <= 0;
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div style={styles.container}>
@@ -496,14 +464,12 @@ export default function FoodPage() {
       <div style={styles.innerContainer}>
         <h1 style={styles.heading}>Food & Drinks</h1>
         
-        {/* Error message */}
         {error && (
           <div style={styles.errorContainer}>
             <p style={styles.errorText}>{error}</p>
           </div>
         )}
         
-        {/* Category selector */}
         <div style={styles.categoryContainer}>
           <div style={styles.categoryWrapper}>
             {categories.map(category => (
@@ -522,14 +488,11 @@ export default function FoodPage() {
           </div>
         </div>
         
-        {/* Main layout - menu + cart */}
         <div style={getLayoutStyle()}>
-          {/* Menu items */}
           <div style={windowWidth >= 1024 ? { width: "66.666667%" } : styles.menuSection}>
             <div style={styles.menuGrid}>
               {filteredItems.map((item) => (
                 <div key={item.id} style={styles.menuItem}>
-                  {/* 🔥 OUT OF STOCK OVERLAY */}
                   {isOutOfStock(item) && (
                     <div style={styles.outOfStockOverlay}>
                       <div style={styles.outOfStockText}>
@@ -544,7 +507,6 @@ export default function FoodPage() {
                   <h3 style={styles.menuTitle}>{item.name}</h3>
                   <p style={styles.menuDescription}>{item.description}</p>
                   
-                  {/* 🔥 STOCK INFORMATION */}
                   {item.stock !== undefined && (
                     <p style={{
                       ...styles.stockInfo,
@@ -575,7 +537,6 @@ export default function FoodPage() {
             </div>
           </div>
           
-          {/* Cart */}
           <div style={windowWidth >= 1024 ? { width: "33.333333%" } : { width: "100%" }}>
             <div style={styles.cartSection}>
               <h2 style={styles.cartTitle}>Your Order</h2>
@@ -627,7 +588,6 @@ export default function FoodPage() {
           </div>
         </div>
 
-        {/* 🔥 DATABASE INTEGRATION: Enhanced Checkout */}
         {showCheckout && (
           <CheckoutPage
             items={cart}
@@ -638,7 +598,6 @@ export default function FoodPage() {
           />
         )}
 
-        {/* CSS for animations */}
         <style>{`
           @keyframes spin {
             to { transform: rotate(360deg); }

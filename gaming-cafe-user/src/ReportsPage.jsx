@@ -15,20 +15,17 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Get user info from localStorage (from login)
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
   const userEmail = userInfo.email || 'guest@ichi.com';
   const userName = userInfo.fullName || 'Guest User';
   const userId = userInfo.id || null;
 
-  // Load user's reports when component mounts or tab changes to history
   useEffect(() => {
     if (activeTab === "history" && userEmail !== 'guest@ichi.com') {
       loadUserReports();
     }
   }, [activeTab, userEmail]);
 
-  // Load user's reports from backend
   const loadUserReports = async () => {
     try {
       setIsLoading(true);
@@ -48,7 +45,6 @@ export default function ReportsPage() {
     }
   };
 
-  // Report categories
   const categories = [
     { id: "technical", name: "Technical Issue", icon: "🔧", description: "Hardware, software, or connectivity problems" },
     { id: "food", name: "Food & Service", icon: "🍔", description: "Food orders, quality, or service issues" },
@@ -57,14 +53,12 @@ export default function ReportsPage() {
     { id: "other", name: "Other", icon: "❓", description: "Any other concerns or feedback" }
   ];
 
-  // Priority levels
   const priorities = [
     { id: "low", name: "Low", color: "#10B981", description: "Minor issue, can wait" },
     { id: "medium", name: "Medium", color: "#F59E0B", description: "Moderate issue, needs attention" },
     { id: "high", name: "High", color: "#EF4444", description: "Urgent issue, requires immediate help" }
   ];
 
-  // Status colors
   const statusColors = {
     pending: "#F59E0B",
     investigating: "#3B82F6", 
@@ -73,7 +67,6 @@ export default function ReportsPage() {
     closed: "#6B7280"
   };
 
-  // Handle form input changes
   const handleInputChange = (field, value) => {
     setReportForm(prev => ({
       ...prev,
@@ -81,7 +74,6 @@ export default function ReportsPage() {
     }));
   };
 
-  // Handle form submission
   const handleSubmitReport = async (e) => {
     e.preventDefault();
     
@@ -114,7 +106,6 @@ export default function ReportsPage() {
       if (response.ok) {
         const data = await response.json();
         
-        // Reset form
         setReportForm({
           category: "technical",
           priority: "medium", 
@@ -127,7 +118,6 @@ export default function ReportsPage() {
         alert(`✅ Report submitted successfully! Report ID: ${data.report.id}`);
         setActiveTab("history");
         
-        // Reload user reports
         setTimeout(() => {
           loadUserReports();
         }, 500);
@@ -168,7 +158,6 @@ export default function ReportsPage() {
       marginBottom: "2rem"
     },
     
-    // Login notice
     loginNotice: {
       backgroundColor: "rgba(245, 158, 11, 0.1)",
       border: "1px solid #F59E0B",
@@ -182,7 +171,6 @@ export default function ReportsPage() {
       fontSize: "0.875rem"
     },
 
-    // Loading states
     loadingContainer: {
       display: "flex",
       justifyContent: "center",
@@ -211,7 +199,6 @@ export default function ReportsPage() {
       fontSize: "1.125rem"
     },
     
-    // Tabs
     tabsContainer: {
       display: "flex",
       backgroundColor: "#1F2937",
@@ -242,7 +229,6 @@ export default function ReportsPage() {
       backgroundColor: "transparent"
     },
 
-    // Form styles
     formContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -287,7 +273,6 @@ export default function ReportsPage() {
       fontFamily: "inherit"
     },
 
-    // Category grid
     categoryGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -319,7 +304,6 @@ export default function ReportsPage() {
       color: "#9CA3AF"
     },
 
-    // Priority selector
     priorityGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(3, 1fr)",
@@ -334,7 +318,6 @@ export default function ReportsPage() {
       textAlign: "center"
     },
 
-    // Submit button
     submitButton: {
       padding: "1rem 2rem",
       borderRadius: "0.75rem",
@@ -355,7 +338,6 @@ export default function ReportsPage() {
       cursor: "not-allowed"
     },
 
-    // Reports list
     reportsList: {
       display: "flex",
       flexDirection: "column",
@@ -411,7 +393,6 @@ export default function ReportsPage() {
       marginBottom: "0.5rem"
     },
 
-    // Help section
     helpContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -454,7 +435,6 @@ export default function ReportsPage() {
     }
   };
 
-  // Add CSS animation
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -475,7 +455,6 @@ export default function ReportsPage() {
       
       <div style={styles.formContainer}>
         <form onSubmit={handleSubmitReport} style={styles.formGrid}>
-          {/* User Info Display */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Submitting as:</label>
             <div style={{color: "#10B981", fontWeight: "600"}}>
@@ -483,7 +462,6 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Category Selection */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
               Report Category <span style={styles.required}>*</span>
@@ -506,7 +484,6 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Priority Selection */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
               Priority Level <span style={styles.required}>*</span>
@@ -531,7 +508,6 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* Title */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
               Issue Title <span style={styles.required}>*</span>
@@ -546,7 +522,6 @@ export default function ReportsPage() {
             />
           </div>
 
-          {/* Station */}
           <div style={styles.formGroup}>
             <label style={styles.label}>Station Number</label>
             <input
@@ -558,7 +533,6 @@ export default function ReportsPage() {
             />
           </div>
 
-          {/* Description */}
           <div style={styles.formGroup}>
             <label style={styles.label}>
               Detailed Description <span style={styles.required}>*</span>
@@ -572,7 +546,6 @@ export default function ReportsPage() {
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting || userEmail === 'guest@ichi.com'}
@@ -735,7 +708,6 @@ export default function ReportsPage() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>Report an Issue</h1>
         <p style={styles.subtitle}>

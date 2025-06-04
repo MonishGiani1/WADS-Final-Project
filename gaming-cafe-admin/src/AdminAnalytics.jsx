@@ -6,7 +6,6 @@ export default function AdminAnalytics() {
   const [selectedMetric, setSelectedMetric] = useState("revenue");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock analytics data
   const [analyticsData, setAnalyticsData] = useState({
     revenue: {
       today: "Rp 2,450,000",
@@ -36,7 +35,6 @@ export default function AdminAnalytics() {
     }
   });
 
-  // Mock chart data
   const [chartData, setChartData] = useState({
     hourlyRevenue: [
       { hour: "08:00", revenue: 125000, users: 3 },
@@ -75,7 +73,6 @@ export default function AdminAnalytics() {
     ]
   });
 
-  // Date range options
   const dateRanges = [
     { id: "today", name: "Today" },
     { id: "yesterday", name: "Yesterday" },
@@ -84,13 +81,10 @@ export default function AdminAnalytics() {
     { id: "quarter", name: "This Quarter" }
   ];
 
-  // Refresh data
   const refreshData = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-      // In real app, fetch fresh data here
       alert("📊 Data refreshed successfully!");
     } catch (error) {
       alert("❌ Failed to refresh data");
@@ -99,7 +93,6 @@ export default function AdminAnalytics() {
     }
   };
 
-  // Export report
   const exportReport = () => {
     const reportData = {
       dateRange,
@@ -144,7 +137,6 @@ export default function AdminAnalytics() {
       marginBottom: "2rem"
     },
 
-    // Controls
     controlsContainer: {
       display: "flex",
       justifyContent: "space-between",
@@ -193,7 +185,6 @@ export default function AdminAnalytics() {
       color: "#D1D5DB"
     },
 
-    // Tabs
     tabsContainer: {
       display: "flex",
       gap: "0.5rem",
@@ -217,7 +208,6 @@ export default function AdminAnalytics() {
       color: "#D1D5DB"
     },
 
-    // KPI Cards
     kpiGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -272,7 +262,6 @@ export default function AdminAnalytics() {
       color: "#6B7280"
     },
 
-    // Charts
     chartsGrid: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
@@ -340,7 +329,6 @@ export default function AdminAnalytics() {
       opacity: 1
     },
 
-    // Tables
     tableContainer: {
       backgroundColor: "#1F2937",
       borderRadius: "1rem",
@@ -369,7 +357,6 @@ export default function AdminAnalytics() {
       fontSize: "0.875rem"
     },
 
-    // Alerts
     alertsContainer: {
       display: "grid",
       gap: "1rem",
@@ -409,7 +396,6 @@ export default function AdminAnalytics() {
     }
   };
 
-  // Add CSS animation
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -420,9 +406,7 @@ export default function AdminAnalytics() {
 
   const renderOverviewTab = () => (
     <>
-      {/* KPI Cards */}
       <div style={styles.kpiGrid}>
-        {/* Revenue Card */}
         <div style={styles.kpiCard}>
           <div style={styles.kpiHeader}>
             <span style={{...styles.kpiIcon, color: "#10B981"}}>💰</span>
@@ -546,7 +530,6 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {/* Popular Games Chart */}
         <div style={styles.chartCard}>
           <div style={styles.chartHeader}>
             <div>
@@ -583,7 +566,6 @@ export default function AdminAnalytics() {
 
   const renderRevenueTab = () => (
     <>
-      {/* Revenue KPIs */}
       <div style={styles.kpiGrid}>
         <div style={styles.kpiCard}>
           <div style={{...styles.kpiValue, color: "#10B981"}}>Rp 14.5M</div>
@@ -599,7 +581,6 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Weekly Revenue Table */}
       <div style={styles.tableContainer}>
         <table style={styles.table}>
           <thead style={styles.tableHeader}>
@@ -635,7 +616,6 @@ export default function AdminAnalytics() {
 
   const renderUsersTab = () => (
     <>
-      {/* User Analytics KPIs */}
       <div style={styles.kpiGrid}>
         <div style={styles.kpiCard}>
           <div style={{...styles.kpiValue, color: "#3B82F6"}}>247</div>
@@ -666,7 +646,6 @@ export default function AdminAnalytics() {
 
   const renderSystemTab = () => (
     <>
-      {/* System Health KPIs */}
       <div style={styles.kpiGrid}>
         <div style={styles.kpiCard}>
           <div style={{...styles.kpiValue, color: "#10B981"}}>99.8%</div>
@@ -697,7 +676,6 @@ export default function AdminAnalytics() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <div style={styles.header}>
         <h1 style={styles.title}>Analytics Dashboard</h1>
         <p style={styles.subtitle}>
@@ -705,7 +683,6 @@ export default function AdminAnalytics() {
         </p>
       </div>
 
-      {/* Controls */}
       <div style={styles.controlsContainer}>
         <div style={styles.leftControls}>
           <select
@@ -748,7 +725,6 @@ export default function AdminAnalytics() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={styles.tabsContainer}>
         {[
           { id: "overview", name: "📊 Overview" },
@@ -769,7 +745,6 @@ export default function AdminAnalytics() {
         ))}
       </div>
 
-      {/* Tab Content */}
       {activeTab === "overview" && renderOverviewTab()}
       {activeTab === "revenue" && renderRevenueTab()}
       {activeTab === "users" && renderUsersTab()}
