@@ -33,7 +33,7 @@ services:
       - admin-backend
     ports:
       # CONSISTENT MAPPING: both external and internal use same port
-      - "3107:3107"  # This way nginx config matches
+      - "80:3107"  # This way nginx config matches
     networks:
       - gaming-cafe-admin-network
 
