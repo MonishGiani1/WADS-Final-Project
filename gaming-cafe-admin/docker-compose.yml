@@ -9,7 +9,6 @@ services:
       PORT: 5001
       ADMIN_PORT: 5001
       NODE_ENV: development
-      # FIXED DATABASE CONNECTION
       MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@10.25.143.17:27017/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
       JWT_SECRET: idkwhattoputheresoiwillusethis
       ADMIN_JWT_SECRET: admin-secret-key-for-ichi-gaming-cafe-2025
@@ -21,7 +20,7 @@ services:
       PREMIUM_HOURLY_RATE: 25000
       LOW_STOCK_THRESHOLD: 5
     ports:
-      # CHANGED PORT TO AVOID CONFLICTS
+      # CONSISTENT MAPPING: external:internal
       - "3109:5001"
     networks:
       - gaming-cafe-admin-network
@@ -33,8 +32,8 @@ services:
     depends_on:
       - admin-backend
     ports:
-      # CHANGED PORT TO AVOID CONFLICTS  
-      - "3110:3107"
+      # CONSISTENT MAPPING: both external and internal use same port
+      - "3107:3107"  # This way nginx config matches
     networks:
       - gaming-cafe-admin-network
 
