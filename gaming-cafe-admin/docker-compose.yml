@@ -4,12 +4,12 @@ services:
   admin-backend:
     image: idkwhatnametoput/gaming-cafe-admin-backend:latest
     restart: always
-    container_name: gaming-cafe-admin-backend
+    container_name: gaming-cafe-admin-backend-container
     environment:
       PORT: 5001
       ADMIN_PORT: 5001
       NODE_ENV: development
-      # FIXED DATABASE CONNECTION - MUST MATCH USER SYSTEM
+      # FIXED DATABASE CONNECTION
       MONGODB_URI: mongodb://e2425-wads-l4bcg4:ciwrot6o@10.25.143.17:27017/e2425-wads-l4bcg4?authSource=e2425-wads-l4bcg4
       JWT_SECRET: idkwhattoputheresoiwillusethis
       ADMIN_JWT_SECRET: admin-secret-key-for-ichi-gaming-cafe-2025
@@ -21,21 +21,24 @@ services:
       PREMIUM_HOURLY_RATE: 25000
       LOW_STOCK_THRESHOLD: 5
     ports:
-      - "3108:5001"
+      # CHANGED PORT TO AVOID CONFLICTS
+      - "3109:5001"
     networks:
-      - admin-network
+      - gaming-cafe-admin-network
 
   admin-frontend:
     image: idkwhatnametoput/gaming-cafe-admin-frontend:latest
     restart: always
-    container_name: gaming-cafe-admin-frontend
+    container_name: gaming-cafe-admin-frontend-container
     depends_on:
       - admin-backend
     ports:
-      - "3107:3107"
+      # CHANGED PORT TO AVOID CONFLICTS  
+      - "3110:3107"
     networks:
-      - admin-network
+      - gaming-cafe-admin-network
 
 networks:
-  admin-network:
+  gaming-cafe-admin-network:
     driver: bridge
+    name: gaming-cafe-admin-net
