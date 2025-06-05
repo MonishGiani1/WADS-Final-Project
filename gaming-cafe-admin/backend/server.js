@@ -341,18 +341,14 @@ const GamingStation = mongoose.model('GamingStation', gamingStationSchema);
 const AdminUser = mongoose.model('AdminUser', adminUserSchema);
 
 app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    'http://localhost:3001',
-    process.env.FRONTEND_URL,
-    process.env.ADMIN_URL,
-    process.env.RAILWAY_STATIC_URL,
-    /\.railway\.app$/
-  ], 
-  credentials: true
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
+
+app.options('*', cors());
 
 app.use(express.json());
 
