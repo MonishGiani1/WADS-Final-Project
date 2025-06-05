@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       proxy: {
-        "user-backend.up.railway.app/api": {
+        "https://admin-backend1.up.railway.app/api": {
           target: mode === "development"
             ? "http://localhost:5000"
             : "https://e2425-wads-l4bcg4-server.csbihub.id",

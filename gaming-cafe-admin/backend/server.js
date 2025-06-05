@@ -389,7 +389,7 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-app.post('user-backend.up.railway.app/api/admin/auth/login', async (req, res) => {
+app.post('/api/admin/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     
@@ -479,7 +479,7 @@ app.post('user-backend.up.railway.app/api/admin/auth/login', async (req, res) =>
   }
 });
 
-app.post('user-backend.up.railway.app/api/admin/setup', async (req, res) => {
+app.post('/api/admin/setup', async (req, res) => {
   try {
     const existingAdmin = await AdminUser.findOne({});
     if (existingAdmin) {
@@ -537,7 +537,7 @@ app.post('user-backend.up.railway.app/api/admin/setup', async (req, res) => {
   }
 });
 
-app.get('user-backend.up.railway.app/api/admin/reports', adminAuth, async (req, res) => {
+app.get('/api/admin/reports', adminAuth, async (req, res) => {
   try {
     const { status, priority, category, limit = 100 } = req.query;
     
@@ -593,7 +593,7 @@ app.get('user-backend.up.railway.app/api/admin/reports', adminAuth, async (req, 
   }
 });
 
-app.patch('user-backend.up.railway.app/api/admin/reports/:reportId/status', adminAuth, async (req, res) => {
+app.patch('/api/admin/reports/:reportId/status', adminAuth, async (req, res) => {
   try {
     const { reportId } = req.params;
     const { status } = req.body;
@@ -634,7 +634,7 @@ app.patch('user-backend.up.railway.app/api/admin/reports/:reportId/status', admi
   }
 });
 
-app.patch('user-backend.up.railway.app/api/admin/reports/:reportId/response', adminAuth, async (req, res) => {
+app.patch('/api/admin/reports/:reportId/response', adminAuth, async (req, res) => {
   try {
     const { reportId } = req.params;
     const { response } = req.body;
@@ -680,7 +680,7 @@ app.patch('user-backend.up.railway.app/api/admin/reports/:reportId/response', ad
   }
 });
 
-app.get('user-backend.up.railway.app/api/admin/users', adminAuth, async (req, res) => {
+app.get('/api/admin/users', adminAuth, async (req, res) => {
   try {
     const { status, limit = 100 } = req.query;
     
@@ -720,7 +720,7 @@ app.get('user-backend.up.railway.app/api/admin/users', adminAuth, async (req, re
   }
 });
 
-app.patch('user-backend.up.railway.app/api/admin/users/:userId/status', adminAuth, async (req, res) => {
+app.patch('/api/admin/users/:userId/status', adminAuth, async (req, res) => {
   try {
     const { userId } = req.params;
     const { isActive } = req.body;
@@ -768,7 +768,7 @@ app.patch('user-backend.up.railway.app/api/admin/users/:userId/status', adminAut
   }
 });
 
-app.get('user-backend.up.railway.app/api/admin/menu-items', adminAuth, async (req, res) => {
+app.get('/api/admin/menu-items', adminAuth, async (req, res) => {
   try {
     const { category, availability } = req.query;
     
@@ -802,7 +802,7 @@ app.get('user-backend.up.railway.app/api/admin/menu-items', adminAuth, async (re
   }
 });
 
-app.patch('user-backend.up.railway.app/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => {
+app.patch('/api/admin/menu-items/:itemId/stock', adminAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
     const { stock } = req.body;
@@ -847,7 +847,7 @@ app.patch('user-backend.up.railway.app/api/admin/menu-items/:itemId/stock', admi
   }
 });
 
-app.post('user-backend.up.railway.app/api/admin/menu-items', adminAuth, async (req, res) => {
+app.post('/api/admin/menu-items', adminAuth, async (req, res) => {
   try {
     const { name, price, category, description, image, stock, isAvailable } = req.body;
     
@@ -887,7 +887,7 @@ app.post('user-backend.up.railway.app/api/admin/menu-items', adminAuth, async (r
   }
 });
 
-app.delete('user-backend.up.railway.app/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
+app.delete('/api/admin/menu-items/:itemId', adminAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
     
@@ -916,7 +916,7 @@ app.delete('user-backend.up.railway.app/api/admin/menu-items/:itemId', adminAuth
   }
 });
 
-app.get('user-backend.up.railway.app/api/admin/analytics', adminAuth, async (req, res) => {
+app.get('/api/admin/analytics', adminAuth, async (req, res) => {
   try {
     const { period = '7d' } = req.query;
     
@@ -1006,7 +1006,7 @@ app.get('user-backend.up.railway.app/api/admin/analytics', adminAuth, async (req
   }
 });
 
-app.get('user-backend.up.railway.app/api/admin/orders', adminAuth, async (req, res) => {
+app.get('/api/admin/orders', adminAuth, async (req, res) => {
   try {
     const { status, orderType, limit = 50 } = req.query;
     
@@ -1046,7 +1046,7 @@ app.get('user-backend.up.railway.app/api/admin/orders', adminAuth, async (req, r
   }
 });
 
-app.patch('user-backend.up.railway.app/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
+app.patch('/api/admin/orders/:orderId/status', adminAuth, async (req, res) => {
   try {
     const { orderId } = req.params;
     const { orderStatus, notes } = req.body;
@@ -1157,7 +1157,7 @@ mongoose.connection.once('open', async () => {
   await initializeDatabase();
 });
 
-app.get('user-backend.up.railway.app/api/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
   const stateMap = {
     0: 'disconnected',
@@ -1192,7 +1192,7 @@ app.use((req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Gaming Cafe Admin Server running on port ${PORT}`);
   console.log(`📍 Admin Server URL: http://localhost:${PORT}`);
-  console.log(`🏥 Admin Health check: http://localhost:${PORT}user-backend.up.railway.app/api/health`);
+  console.log(`🏥 Admin Health check: http://localhost:${PORT}/api/health`);
   console.log(`🕐 Started at: ${new Date().toISOString()}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
   console.log(`👤 Default admin: admin/admin123`);

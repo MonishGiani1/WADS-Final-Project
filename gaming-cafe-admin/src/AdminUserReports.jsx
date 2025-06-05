@@ -47,7 +47,7 @@ export default function AdminUserReports() {
       }
 
       console.log('🔍 Fetching reports from admin server...');
-      const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/reports`, {
+      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/reports`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -108,7 +108,7 @@ export default function AdminUserReports() {
         }
 
         console.log(`🔄 Updating report ${reportId} status to ${newStatus}...`);
-        const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/reports/${reportId}/status`, {
+        const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/reports/${reportId}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default function AdminUserReports() {
       }
 
       console.log(`💬 Adding response to report ${reportId}...`);
-      const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/reports/${reportId}/response`, {
+      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/reports/${reportId}/response`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

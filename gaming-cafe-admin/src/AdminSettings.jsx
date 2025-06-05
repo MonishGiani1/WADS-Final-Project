@@ -80,7 +80,7 @@ export default function AdminSettings() {
       console.log('Loading admin profile...');
       // For now, use the mock data since admin profile endpoint might not exist yet
       // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/profile`, {
+      // const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/profile`, {
       //   headers: { 'Authorization': `Bearer ${token}` }
       // });
       
@@ -144,7 +144,7 @@ export default function AdminSettings() {
 
       console.log('Updating admin profile...');
       // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/profile`, {
+      // const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/profile`, {
       //   method: 'PUT',
       //   headers: {
       //     'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export default function AdminSettings() {
 
       console.log('Updating admin password...');
       // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/change-password`, {
+      // const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/change-password`, {
       //   method: 'POST',
       //   headers: {
       //     'Content-Type': 'application/json',
@@ -257,7 +257,7 @@ export default function AdminSettings() {
 
       console.log('Updating system settings...');
       // TODO: Implement actual API call when endpoint is ready
-      // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/system-settings`, {
+      // const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/system-settings`, {
       //   method: 'PUT',
       //   headers: {
       //     'Content-Type': 'application/json',
@@ -320,7 +320,7 @@ export default function AdminSettings() {
 
         console.log('Creating system backup...');
         // TODO: Implement actual API call when endpoint is ready
-        // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/backup`, {
+        // const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/backup`, {
         //   method: 'POST',
         //   headers: { 'Authorization': `Bearer ${token}` }
         // });
