@@ -344,13 +344,10 @@ const QrisPayment = mongoose.model('QrisPayment', qrisSchema);
 
 app.use(cors({
   origin: [
-    'http://localhost:3000', 
-    'http://localhost:5173', 
-    'http://localhost:5174',
-    process.env.FRONTEND_URL,
-    process.env.RAILWAY_STATIC_URL,
-    /\.railway\.app$/
-  ], 
+    process.env.FRONTEND_URL,           
+    process.env.RAILWAY_STATIC_URL,     
+    'https://user-frontend.up.railway.app'  
+  ],
   credentials: true
 }));
 
