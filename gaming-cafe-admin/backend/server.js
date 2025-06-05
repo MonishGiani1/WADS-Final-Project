@@ -350,6 +350,11 @@ app.use(cors({
 
 app.options('*', cors());
 
+app.use((req, res, next) => {
+  console.log('🔍 Incoming request:', req.method, req.path);
+  next();
+});
+
 app.use(express.json());
 
 const adminAuth = async (req, res, next) => {
@@ -1182,6 +1187,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
+  console.log('❌ Unmatched route:', req.method, req.path);
   res.status(404).json({ error: 'Admin endpoint not found' });
 });
 
