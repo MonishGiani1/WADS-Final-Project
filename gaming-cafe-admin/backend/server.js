@@ -341,7 +341,7 @@ const GamingStation = mongoose.model('GamingStation', gamingStationSchema);
 const AdminUser = mongoose.model('AdminUser', adminUserSchema);
 
 app.use(cors({
-  origin: '*',
+  origin: ['https://admin-frontend.up.railway.app','*'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
