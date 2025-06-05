@@ -30,7 +30,7 @@ export default function GamingSection() {
   const [currentView, setCurrentView] = useState("library"); // New state for view management
 
   // Fallback image for all games
-  const fallbackImage = "user-backend.up.railway.app/api/placeholder/480/320";
+  const fallbackImage = "https://user-backend.up.railway.app/api/placeholder/480/320";
 
   // Game categories
   const categories = [
@@ -193,7 +193,7 @@ export default function GamingSection() {
       try {
         setIsLoadingCounts(true);
         // Replace with your actual backend URL
-        const response = await fetch('user-backend.up.railway.app/api/player-counts');
+        const response = await fetch('https://user-backend.up.railway.app/api/player-counts');
         if (!response.ok) throw new Error('Failed to fetch player counts');
         
         const data = await response.json();

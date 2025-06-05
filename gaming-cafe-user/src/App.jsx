@@ -42,7 +42,7 @@ export default function App() {
 
       const usedMinutes = Math.floor((gamingTimer - remainingSeconds) / 60);
       
-      await fetch(`user-backend.up.railway.app/api/users/${userId}/timer-state`, {
+      await fetch(`https://user-backend.up.railway.app/api/users/${userId}/timer-state`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -187,7 +187,7 @@ export default function App() {
         let shouldAutoStart = false;
 
         if (userData.id && token) {
-          const response = await fetch(`user-backend.up.railway.app/api/users/${userData.id}/quota`, {
+          const response = await fetch(`https://user-backend.up.railway.app/api/users/${userData.id}/quota`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'

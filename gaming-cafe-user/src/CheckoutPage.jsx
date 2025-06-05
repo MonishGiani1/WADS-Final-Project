@@ -53,7 +53,7 @@ export default function CheckoutPage({
   const saveOrderToDatabase = async (orderData) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await fetch('user-backend.up.railway.app/api/orders', {
+      const response = await fetch('https://user-backend.up.railway.app/api/orders', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export default function CheckoutPage({
   // 🔥 DATABASE INTEGRATION: Update order status
   const updateOrderStatus = async (orderId, status, paymentData = {}) => {
     try {
-      await fetch(`user-backend.up.railway.app/api/orders/${orderId}`, {
+      await fetch(`https://user-backend.up.railway.app/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export default function CheckoutPage({
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.id) {
-        await fetch(`user-backend.up.railway.app/api/users/${user.id}/quota`, {
+        await fetch(`https://user-backend.up.railway.app/api/users/${user.id}/quota`, {
           method: 'PATCH',
           headers: { 
             'Content-Type': 'application/json',
@@ -228,7 +228,7 @@ export default function CheckoutPage({
           }
         
           // Call Stripe payment API
-          const response = await axios.post('user-backend.up.railway.app/api/create-payment-intent', {
+          const response = await axios.post('https://user-backend.up.railway.app/api/create-payment-intent', {
             amount: totalAmount * 100, // Convert to smallest currency unit
             currency: 'idr',
             description: `${checkoutType === 'quota' ? 'Gaming Time' : 'Food Order'} for ${formData.name}`,
@@ -250,7 +250,7 @@ export default function CheckoutPage({
             // For this implementation, we'll simulate a successful payment
             
             // Verify the payment status
-            const verifyResponse = await axios.get(`user-backend.up.railway.app/api/verify-payment/${response.data.id}`);
+            const verifyResponse = await axios.get(`https://user-backend.up.railway.app/api/verify-payment/${response.data.id}`);
             if (verifyResponse.data.status === 'succeeded') {
               // 🔥 DATABASE INTEGRATION: Update order status to completed
               await updateOrderStatus(uniqueOrderId, 'completed', {
@@ -283,7 +283,7 @@ export default function CheckoutPage({
         
         } else if (formData.paymentMethod === "qris") {
           // Call QRIS payment API
-          const response = await axios.post('user-backend.up.railway.app/api/create-qris-payment', {
+          const response = await axios.post('https://user-backend.up.railway.app/api/create-qris-payment', {
             amount: totalAmount,
             orderId: uniqueOrderId,
             customerName: formData.name,
@@ -301,7 +301,7 @@ export default function CheckoutPage({
             // Start polling for payment status
             const pollingInterval = setInterval(async () => {
               try {
-                const statusResponse = await axios.get(`user-backend.up.railway.app/api/check-qris-status/${response.data.transactionId}`);
+                const statusResponse = await axios.get(`https://user-backend.up.railway.app/api/check-qris-status/${response.data.transactionId}`);
                 
                 if (statusResponse.data.status === 'COMPLETED' || statusResponse.data.status === 'PAID') {
                   // 🔥 DATABASE INTEGRATION: Update order status to completed

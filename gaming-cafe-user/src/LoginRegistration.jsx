@@ -31,7 +31,7 @@ export default function LoginRegistration({ onLogin }) {
     }
     
     try {
-      const response = await fetch('user-backend.up.railway.app/api/auth/login', {
+      const response = await fetch('https://user-backend.up.railway.app/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function LoginRegistration({ onLogin }) {
     }
     
     try {
-      const response = await fetch('user-backend.up.railway.app/api/auth/register', {
+      const response = await fetch('https://user-backend.up.railway.app/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

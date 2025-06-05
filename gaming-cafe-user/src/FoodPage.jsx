@@ -28,7 +28,7 @@ export default function FoodPage() {
     const loadMenuItems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('user-backend.up.railway.app/api/menu-items');
+        const response = await fetch('https://user-backend.up.railway.app/api/menu-items');
         
         if (response.ok) {
           const data = await response.json();
@@ -93,7 +93,7 @@ export default function FoodPage() {
   // 🔥 DATABASE INTEGRATION: Update menu item stock after order
   const updateMenuItemStock = async (items) => {
     try {
-      await fetch('user-backend.up.railway.app/api/menu-items/update-stock', {
+      await fetch('https://user-backend.up.railway.app/api/menu-items/update-stock', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ export default function FoodPage() {
       });
       
       // Refresh menu items to show updated stock
-      const response = await fetch('user-backend.up.railway.app/api/menu-items');
+      const response = await fetch('https://user-backend.up.railway.app/api/menu-items');
       if (response.ok) {
         const data = await response.json();
         setMenuItems(data.menuItems || []);
