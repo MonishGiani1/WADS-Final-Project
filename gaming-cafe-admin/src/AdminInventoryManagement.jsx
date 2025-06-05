@@ -47,7 +47,7 @@ export default function AdminInventoryManagement() {
       }
 
       console.log('🔍 Fetching menu items from admin server...');
-      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/menu-items`, {
+      const response = await fetch(`${ADMIN_API_BASE}/api/admin/menu-items`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ export default function AdminInventoryManagement() {
       }
 
       console.log('➕ Adding new menu item...');
-      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/menu-items`, {
+      const response = await fetch(`${ADMIN_API_BASE}/api/admin/menu-items`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function AdminInventoryManagement() {
       }
 
       console.log(`📝 Updating menu item ${editingItem._id}...`);
-      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/menu-items/${editingItem._id}`, {
+      const response = await fetch(`${ADMIN_API_BASE}/api/admin/menu-items/${editingItem._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ export default function AdminInventoryManagement() {
       }
 
       console.log(`🗑️ Deleting menu item ${itemId}...`);
-      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/menu-items/${itemId}`, {
+      const response = await fetch(`${ADMIN_API_BASE}/api/admin/menu-items/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -258,7 +258,7 @@ export default function AdminInventoryManagement() {
       }
 
       console.log(`📦 Updating stock for item ${itemId} to ${newStock}...`);
-      const response = await fetch(`${ADMIN_API_BASE}https://admin-backend1.up.railway.app/api/admin/menu-items/${itemId}/stock`, {
+      const response = await fetch(`${ADMIN_API_BASE}/api/admin/menu-items/${itemId}/stock`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
