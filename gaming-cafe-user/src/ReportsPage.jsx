@@ -32,7 +32,7 @@ export default function ReportsPage() {
   const loadUserReports = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/reports/user/${encodeURIComponent(userEmail)}`);
+      const response = await fetch(`user-backend.up.railway.app/api/reports/user/${encodeURIComponent(userEmail)}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -98,7 +98,7 @@ export default function ReportsPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/reports', {
+      const response = await fetch('user-backend.up.railway.app/api/reports', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

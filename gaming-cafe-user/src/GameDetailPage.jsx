@@ -127,10 +127,10 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
   function getScreenshots(gameName) {
     // Generate placeholder screenshots
     return [
-      `/api/placeholder/800/450`,
-      `/api/placeholder/800/450`,
-      `/api/placeholder/800/450`,
-      `/api/placeholder/800/450`
+      `user-backend.up.railway.app/api/placeholder/800/450`,
+      `user-backend.up.railway.app/api/placeholder/800/450`,
+      `user-backend.up.railway.app/api/placeholder/800/450`,
+      `user-backend.up.railway.app/api/placeholder/800/450`
     ];
   }
 
@@ -142,7 +142,7 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
       if (game.executablePath) {
         console.log(`🎮 Attempting to launch ${game.name} via executable: ${game.executablePath}`);
         
-        const response = await fetch('/api/launch-game', {
+        const response = await fetch('user-backend.up.railway.app/api/launch-game', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -433,7 +433,7 @@ export default function GameDetailPage({ game, onBack, onLaunch, isLaunching }) 
       {/* Header Section */}
       <div style={styles.header}>
         <img 
-          src={game.image || "/api/placeholder/800/400"} 
+          src={game.image || "user-backend.up.railway.app/api/placeholder/800/400"} 
           alt={game.name}
           style={styles.headerImage}
         />

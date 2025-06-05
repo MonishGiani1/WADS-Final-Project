@@ -373,7 +373,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('user-backend.up.railway.app/api/auth/register', async (req, res) => {
   try {
     const { fullName, email, password, phoneNumber } = req.body;
     
@@ -422,7 +422,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('user-backend.up.railway.app/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -483,7 +483,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/reports', async (req, res) => {
+app.post('user-backend.up.railway.app/api/reports', async (req, res) => {
   try {
     const reportId = `RPT${Date.now()}${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
     
@@ -510,7 +510,7 @@ app.post('/api/reports', async (req, res) => {
   }
 });
 
-app.get('/api/reports/user/:email', async (req, res) => {
+app.get('user-backend.up.railway.app/api/reports/user/:email', async (req, res) => {
   try {
     const userEmail = decodeURIComponent(req.params.email);
     const reports = await Report.find({ userEmail }).sort({ submittedAt: -1 });
@@ -533,7 +533,7 @@ app.get('/api/reports/user/:email', async (req, res) => {
   }
 });
 
-app.get('/api/menu-items', async (req, res) => {
+app.get('user-backend.up.railway.app/api/menu-items', async (req, res) => {
   try {
     const menuItems = await MenuItem.find({ isAvailable: true }).sort({ category: 1, name: 1 });
     res.json({ success: true, menuItems });
@@ -543,7 +543,7 @@ app.get('/api/menu-items', async (req, res) => {
   }
 });
 
-app.patch('/api/menu-items/update-stock', authenticateToken, async (req, res) => {
+app.patch('user-backend.up.railway.app/api/menu-items/update-stock', authenticateToken, async (req, res) => {
   try {
     const { orderItems } = req.body;
     
@@ -563,7 +563,7 @@ app.patch('/api/menu-items/update-stock', authenticateToken, async (req, res) =>
   }
 });
 
-app.post('/api/orders', async (req, res) => {
+app.post('user-backend.up.railway.app/api/orders', async (req, res) => {
   try {
     const order = new Order(req.body);
     await order.save();
@@ -576,7 +576,7 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.patch('/api/orders/:orderId', async (req, res) => {
+app.patch('user-backend.up.railway.app/api/orders/:orderId', async (req, res) => {
   try {
     const order = await Order.findOneAndUpdate(
       { orderId: req.params.orderId },
@@ -595,7 +595,7 @@ app.patch('/api/orders/:orderId', async (req, res) => {
   }
 });
 
-app.get('/api/users/:userId/quota', authenticateToken, async (req, res) => {
+app.get('user-backend.up.railway.app/api/users/:userId/quota', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user) {
@@ -613,7 +613,7 @@ app.get('/api/users/:userId/quota', authenticateToken, async (req, res) => {
   }
 });
 
-app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
+app.patch('user-backend.up.railway.app/api/users/:userId/quota', authenticateToken, async (req, res) => {
   try {
     const { quotaMinutes, action, purchaseAmount } = req.body;
     
@@ -673,7 +673,7 @@ app.patch('/api/users/:userId/quota', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/users/:userId', authenticateToken, async (req, res) => {
+app.get('user-backend.up.railway.app/api/users/:userId', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('-password');
     if (!user) {
@@ -687,7 +687,7 @@ app.get('/api/users/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-app.patch('/api/users/:userId', authenticateToken, async (req, res) => {
+app.patch('user-backend.up.railway.app/api/users/:userId', authenticateToken, async (req, res) => {
   try {
     const { fullName, email, phoneNumber } = req.body;
     
@@ -713,7 +713,7 @@ app.patch('/api/users/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-app.patch('/api/users/:userId/password', authenticateToken, async (req, res) => {
+app.patch('user-backend.up.railway.app/api/users/:userId/password', authenticateToken, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     
@@ -739,7 +739,7 @@ app.patch('/api/users/:userId/password', authenticateToken, async (req, res) => 
   }
 });
 
-app.delete('/api/users/:userId', authenticateToken, async (req, res) => {
+app.delete('user-backend.up.railway.app/api/users/:userId', authenticateToken, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.userId);
     if (!user) {
@@ -775,7 +775,7 @@ const getMockPlayerCounts = () => ({
   'Battlefield': (76000 + Math.floor(Math.random() * 8000)).toLocaleString(),
 });
 
-app.get('/api/player-counts', async (req, res) => {
+app.get('user-backend.up.railway.app/api/player-counts', async (req, res) => {
   try {
     console.log('Fetching player counts...');
     const playerCounts = getMockPlayerCounts();
@@ -787,7 +787,7 @@ app.get('/api/player-counts', async (req, res) => {
   }
 });
 
-app.post('/api/create-payment-intent', async (req, res) => {
+app.post('user-backend.up.railway.app/api/create-payment-intent', async (req, res) => {
   try {
     const { amount, currency = 'idr', description, metadata } = req.body;
     
@@ -820,7 +820,7 @@ app.post('/api/create-payment-intent', async (req, res) => {
   }
 });
 
-app.get('/api/verify-payment/:paymentId', async (req, res) => {
+app.get('user-backend.up.railway.app/api/verify-payment/:paymentId', async (req, res) => {
   try {
     const paymentId = req.params.paymentId;
     console.log('Verifying payment:', paymentId);
@@ -847,7 +847,7 @@ app.get('/api/verify-payment/:paymentId', async (req, res) => {
   }
 });
 
-app.post('/api/create-qris-payment', async (req, res) => {
+app.post('user-backend.up.railway.app/api/create-qris-payment', async (req, res) => {
   try {
     const { amount, orderId, customerName, expiryMinutes = 15 } = req.body;
     
@@ -903,7 +903,7 @@ app.post('/api/create-qris-payment', async (req, res) => {
   }
 });
 
-app.get('/api/check-qris-status/:transactionId', async (req, res) => {
+app.get('user-backend.up.railway.app/api/check-qris-status/:transactionId', async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
     console.log('Checking QRIS status:', transactionId);
@@ -944,7 +944,7 @@ app.get('/api/check-qris-status/:transactionId', async (req, res) => {
   }
 });
 
-app.post('/api/complete-qris/:transactionId', async (req, res) => {
+app.post('user-backend.up.railway.app/api/complete-qris/:transactionId', async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
     const qrisPayment = await QrisPayment.findOne({ transactionId });
@@ -967,7 +967,7 @@ app.post('/api/complete-qris/:transactionId', async (req, res) => {
   }
 });
 
-app.post('/api/launch-game', async (req, res) => {
+app.post('user-backend.up.railway.app/api/launch-game', async (req, res) => {
   try {
     const { gameName, executablePath } = req.body;
     
@@ -988,7 +988,7 @@ app.post('/api/launch-game', async (req, res) => {
   }
 });
 
-app.get('/api/running-games', (req, res) => {
+app.get('user-backend.up.railway.app/api/running-games', (req, res) => {
   res.json({ 
     runningGames: [],
     message: 'Running games detection not available on cloud deployment'
@@ -996,7 +996,7 @@ app.get('/api/running-games', (req, res) => {
 });
 
 
-app.post('/api/ai/gemini', authenticateToken, async (req, res) => {
+app.post('user-backend.up.railway.app/api/ai/gemini', authenticateToken, async (req, res) => {
   try {
     const { message, userContext } = req.body;
     
@@ -1141,7 +1141,7 @@ mongoose.connection.once('open', async () => {
   await initializeDatabase();
 });
 
-app.get('/api/health', (req, res) => {
+app.get('user-backend.up.railway.app/api/health', (req, res) => {
   const dbState = mongoose.connection.readyState;
   const stateMap = {
     0: 'disconnected',
@@ -1176,7 +1176,7 @@ app.use((req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Gaming Cafe User Server running on port ${PORT}`);
   console.log(`📍 Server URL: http://localhost:${PORT}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🏥 Health check: http://localhost:${PORT}user-backend.up.railway.app/api/health`);
   console.log(`🕐 Started at: ${new Date().toISOString()}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'production'}`);
 });

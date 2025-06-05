@@ -27,7 +27,7 @@ export default function AdminLogin({ onAdminLogin }) {
     try {
       console.log('🛡️ Attempting admin login with backend...');
       
-      const response = await fetch('http://localhost:5001/api/admin/auth/login', {
+      const response = await fetch('http://user-backend.up.railway.appuser-backend.up.railway.app/api/admin/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -14,7 +14,7 @@ export default function AIAssistantPage({ userInfo }) {
 
   const getGeminiResponse = async (userMessage) => {
     try {
-      const response = await fetch('/api/ai/gemini', {
+      const response = await fetch('user-backend.up.railway.app/api/ai/gemini', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

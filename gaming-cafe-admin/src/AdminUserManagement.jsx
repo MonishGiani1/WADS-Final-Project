@@ -42,7 +42,7 @@ export default function AdminUserManagement() {
       }
 
       console.log('🔍 Fetching users from admin server...');
-      const response = await fetch(`${ADMIN_API_BASE}/api/admin/users`, {
+      const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/users`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -140,7 +140,7 @@ export default function AdminUserManagement() {
         }
 
         console.log(`🔄 Updating user ${userId} status to ${newStatus}...`);
-        const response = await fetch(`${ADMIN_API_BASE}/api/admin/users/${userId}/status`, {
+        const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/users/${userId}/status`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ export default function AdminUserManagement() {
       
       try {
         // TODO: Implement session management API
-        // const response = await fetch(`${ADMIN_API_BASE}/api/admin/sessions/${sessionId}/end`, {
+        // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/sessions/${sessionId}/end`, {
         //   method: 'POST',
         //   headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
         // });
@@ -222,7 +222,7 @@ export default function AdminUserManagement() {
       
       try {
         // TODO: Implement balance management API
-        // const response = await fetch(`${ADMIN_API_BASE}/api/admin/users/${userId}/balance`, {
+        // const response = await fetch(`${ADMIN_API_BASE}user-backend.up.railway.app/api/admin/users/${userId}/balance`, {
         //   method: 'PATCH',
         //   headers: {
         //     'Content-Type': 'application/json',
