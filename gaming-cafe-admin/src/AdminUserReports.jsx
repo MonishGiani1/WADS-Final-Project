@@ -22,10 +22,10 @@ export default function AdminUserReports() {
   // Admin server configuration - fallback for browser environment
   const getAdminApiBase = () => {
     try {
-      return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
+      return process.env.REACT_APP_ADMIN_API_URL || 'https://admin-backend1.up.railway.app';
     } catch (error) {
       // Fallback for environments where process is not defined
-      return 'http://localhost:5001';
+      return 'https://admin-backend1.up.railway.app';
     }
   };
   const ADMIN_API_BASE = getAdminApiBase();

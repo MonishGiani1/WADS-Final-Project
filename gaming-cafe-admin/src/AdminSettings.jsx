@@ -4,9 +4,9 @@ export default function AdminSettings() {
   // Admin server configuration
   const getAdminApiBase = () => {
     try {
-      return process.env.REACT_APP_ADMIN_API_URL || 'http://localhost:5001';
+      return process.env.REACT_APP_ADMIN_API_URL || 'https://admin-backend1.up.railway.app';
     } catch (error) {
-      return 'http://localhost:5001';
+      return 'https://admin-backend1.up.railway.app';
     }
   };
   const ADMIN_API_BASE = getAdminApiBase();
