@@ -36,7 +36,7 @@ export default function CheckoutPage({
   const [qrisPolling, setQrisPolling] = useState(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   
-  // 🔥 DATABASE INTEGRATION: Pre-fill user details if logged in
+  // DATABASE INTEGRATION: Pre-fill user details if logged in
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (user.email) {
@@ -49,7 +49,7 @@ export default function CheckoutPage({
     }
   }, []);
 
-  // 🔥 DATABASE INTEGRATION: Save order to database
+  // DATABASE INTEGRATION: Save order to database
   const saveOrderToDatabase = async (orderData) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -71,7 +71,7 @@ export default function CheckoutPage({
     }
   };
 
-  // 🔥 DATABASE INTEGRATION: Update order status
+  // DATABASE INTEGRATION: Update order status
   const updateOrderStatus = async (orderId, status, paymentData = {}) => {
     try {
       await fetch(`https://user-backend.up.railway.app/api/orders/${orderId}`, {
@@ -203,7 +203,7 @@ export default function CheckoutPage({
         const uniqueOrderId = `order_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         setOrderId(uniqueOrderId);
 
-        // 🔥 DATABASE INTEGRATION: Save order to database BEFORE payment
+        // DATABASE INTEGRATION: Save order to database BEFORE payment
         const orderData = {
           orderId: uniqueOrderId,
           customerName: formData.name,
@@ -252,13 +252,13 @@ export default function CheckoutPage({
             // Verify the payment status
             const verifyResponse = await axios.get(`https://user-backend.up.railway.app/api/verify-payment/${response.data.id}`);
             if (verifyResponse.data.status === 'succeeded') {
-              // 🔥 DATABASE INTEGRATION: Update order status to completed
+              // DATABASE INTEGRATION: Update order status to completed
               await updateOrderStatus(uniqueOrderId, 'completed', {
                 paidAt: new Date(),
                 paymentMethod: 'credit-card'
               });
 
-              // 🔥 DATABASE INTEGRATION: If it's gaming quota, update user's quota
+              // DATABASE INTEGRATION: If it's gaming quota, update user's quota
               if (checkoutType === 'quota') {
                 const totalQuotaMinutes = items.reduce((total, item) => {
                   // Assuming gaming time items have minutes in their data
@@ -293,7 +293,7 @@ export default function CheckoutPage({
           if (response.data.success) {
             setQrisData(response.data);
 
-            // 🔥 DATABASE INTEGRATION: Update order with QRIS transaction ID
+            // DATABASE INTEGRATION: Update order with QRIS transaction ID
             await updateOrderStatus(uniqueOrderId, 'awaiting_payment', {
               qrisTransactionId: response.data.transactionId
             });
@@ -304,14 +304,14 @@ export default function CheckoutPage({
                 const statusResponse = await axios.get(`https://user-backend.up.railway.app/api/check-qris-status/${response.data.transactionId}`);
                 
                 if (statusResponse.data.status === 'COMPLETED' || statusResponse.data.status === 'PAID') {
-                  // 🔥 DATABASE INTEGRATION: Update order status to completed
+                  // DATABASE INTEGRATION: Update order status to completed
                   await updateOrderStatus(uniqueOrderId, 'completed', {
                     paidAt: new Date(),
                     qrisPaidAmount: statusResponse.data.paidAmount,
                     qrisPaidAt: statusResponse.data.paidAt
                   });
 
-                  // 🔥 DATABASE INTEGRATION: If it's gaming quota, update user's quota
+                  // DATABASE INTEGRATION: If it's gaming quota, update user's quota
                   if (checkoutType === 'quota') {
                     const totalQuotaMinutes = items.reduce((total, item) => {
                       return total + (item.minutes || 0) * (item.quantity || 1);
@@ -346,7 +346,7 @@ export default function CheckoutPage({
           setStep(3);
         }
       } catch (error) {
-        // 🔥 DATABASE INTEGRATION: Update order status to failed if payment fails
+        // DATABASE INTEGRATION: Update order status to failed if payment fails
         if (orderId) {
           await updateOrderStatus(orderId, 'failed', {
             failureReason: error.message
