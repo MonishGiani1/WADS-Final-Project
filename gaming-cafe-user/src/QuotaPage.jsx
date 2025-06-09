@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import CheckoutPage from "./CheckoutPage";
 
 export default function QuotaPage({ userInfo, updateUserInfo }) {
-  // 🔒 SECURITY: Real user data from database - NO MANUAL CONTROL
+  // SECURITY: Real user data from database - NO MANUAL CONTROL
   const [userQuota, setUserQuota] = useState({
     totalMinutes: 0,      // Total gaming time purchased
     usedMinutes: 0,       // Time already used in current session
     remainingMinutes: 0   // Available time left
   });
   
-  // 🔒 SECURITY: Auto-timer states - NO USER CONTROL
+  // SECURITY: Auto-timer states - NO USER CONTROL
   const [gamingTimer, setGamingTimer] = useState(null); // Timer in seconds
   const [isGaming, setIsGaming] = useState(false); // Gaming session state (auto-managed)
   const [displayTime, setDisplayTime] = useState(0); // For real-time display
@@ -19,7 +19,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔒 SECURITY: Gaming time packages (could also be loaded from DB)
+  // SECURITY: Gaming time packages 
   const quotaPlans = [
     { id: 1, name: "30 Min Boost", price: 10000, time: 30, minutes: 30, icon: "⚡" },
     { id: 2, name: "1 Hour Boost", price: 20000, time: 60, minutes: 60, icon: "⏱️" },
@@ -28,7 +28,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     { id: 5, name: "All Day Pass", price: 150000, time: 720, minutes: 720, icon: "🎮" },
   ];
 
-  // 🔒 SECURITY: Function to save timer state to database (background only)
+  // SECURITY: Function to save timer state to database (background only)
   const saveTimerState = async (remainingSeconds) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -54,7 +54,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     }
   };
 
-  // 🔒 SECURITY: Auto-timer countdown - NO USER CONTROL ALLOWED
+  // SECURITY: Auto-timer countdown - NO USER CONTROL ALLOWED
   useEffect(() => {
     let countdownTimer;
     
@@ -80,12 +80,12 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
             });
           }
           
-          // 🔒 SECURITY: Save to database every 10 seconds
+          // SECURITY: Save to database every 10 seconds
           if (newTime % 10 === 0) {
             saveTimerState(newTime);
           }
           
-          // 🔒 SECURITY: Auto-stop when time reaches 0 - NO USER BYPASS
+          // SECURITY: Auto-stop when time reaches 0 - NO USER BYPASS
           if (newTime <= 0) {
             setIsGaming(false);
             saveTimerState(0);
@@ -105,7 +105,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     };
   }, [isGaming, gamingTimer, updateUserInfo, userQuota.totalMinutes]);
 
-  // 🔒 SECURITY: Save timer state when user leaves the page
+  // SECURITY: Save timer state when user leaves the page
   useEffect(() => {
     const handleBeforeUnload = async () => {
       if (isGaming && gamingTimer > 0) {
@@ -117,7 +117,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isGaming, gamingTimer]);
 
-  // 🔒 SECURITY: Load user gaming quota and AUTO-START timer
+  // SECURITY: Load user gaming quota and AUTO-START timer
   useEffect(() => {
     const loadUserQuota = async () => {
       try {
@@ -136,7 +136,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
           if (response.ok) {
             const data = await response.json();
             
-            // 🔒 SECURITY: Calculate actual remaining time
+            // sECURITY: Calculate actual remaining time
             const totalMinutes = data.gamingQuotaMinutes || 0;
             const usedMinutes = data.sessionUsedMinutes || 0;
             const actualRemainingMinutes = Math.max(0, totalMinutes - usedMinutes);
@@ -149,7 +149,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
             
             setUserQuota(quotaData);
             
-            // 🔒 SECURITY: Set timer to actual remaining time
+            // SECURITY: Set timer to actual remaining time
             const remainingSeconds = actualRemainingMinutes * 60;
             setGamingTimer(remainingSeconds);
             setDisplayTime(remainingSeconds);
@@ -161,7 +161,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
               seconds: remainingSeconds
             });
             
-            // 🔒 SECURITY: AUTO-START timer if there's time remaining
+            // SECURITY: AUTO-START timer if there's time remaining
             if (actualRemainingMinutes > 0) {
               setIsGaming(true);
               console.log('🎮 Auto-starting gaming session with', actualRemainingMinutes, 'minutes');
@@ -214,7 +214,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     loadUserQuota();
   }, []);
 
-  // 🔒 SECURITY: Refresh quota data after purchase with proper timer handling
+  // SECURITY: Refresh quota data after purchase with proper timer handling
   const refreshQuotaData = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -231,7 +231,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
         if (response.ok) {
           const data = await response.json();
           
-          // 🔒 SECURITY: Calculate remaining time properly after purchase
+          // SECURITY: Calculate remaining time properly after purchase
           const totalMinutes = data.gamingQuotaMinutes || 0;
           const usedMinutes = data.sessionUsedMinutes || 0;
           const actualRemainingMinutes = Math.max(0, totalMinutes - usedMinutes);
@@ -244,7 +244,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
           
           setUserQuota(quotaData);
           
-          // 🔒 SECURITY: Add to existing timer or set new timer
+          // SECURITY: Add to existing timer or set new timer
           const newRemainingSeconds = actualRemainingMinutes * 60;
           if (isGaming && gamingTimer > 0) {
             // If timer was running, add the purchased time to current timer
@@ -272,7 +272,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
             });
           }
           
-          // 🔒 SECURITY: AUTO-RESTART timer if user bought more time
+          // SECURITY: AUTO-RESTART timer if user bought more time
           if (!isGaming && actualRemainingMinutes > 0) {
             setIsGaming(true);
             console.log('🎮 Auto-restarting gaming session after quota purchase');
@@ -289,7 +289,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     return `Rp ${price.toLocaleString('id-ID')}`;
   };
   
-  // 🔒 SECURITY: Calculate percentage based on actual usage
+  // SECURITY: Calculate percentage based on actual usage
   const percentageUsed = userQuota.totalMinutes > 0 
     ? (userQuota.usedMinutes / userQuota.totalMinutes) * 100 
     : 0;
@@ -300,7 +300,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     setShowCheckout(true);
   };
 
-  // 🔒 SECURITY: Handle checkout completion with quota refresh
+  // SECURITY: Handle checkout completion with quota refresh
   const handleCheckoutComplete = async () => {
     if (selectedPlan) {
       // Wait a moment for the database to update, then refresh quota
@@ -325,7 +325,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     setSelectedPlan(null);
   };
 
-  // 🔒 SECURITY: Format time display with real-time support
+  // SECURITY: Format time display with real-time support
   const formatTime = (minutes) => {
     if (minutes < 60) {
       return `${minutes}m`;
@@ -346,7 +346,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
 
-  // 🔒 SECURITY: Format seconds to minutes and seconds for display
+  // SECURITY: Format seconds to minutes and seconds for display
   const formatSecondsDisplay = (seconds) => {
     if (seconds <= 0) return "0m 0s";
     const minutes = Math.floor(seconds / 60);
@@ -671,7 +671,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
         {/* Quota Display Section with Auto Timer */}
         <div style={styles.quotaSection}>
           <div style={styles.quotaCard}>
-            {/* 🔒 SECURITY: Low quota warnings */}
+            {/* SECURITY: Low quota warnings */}
             {userQuota.remainingMinutes <= 0 && (
               <div style={styles.noQuotaWarning}>
                 <p style={styles.noQuotaText}>
@@ -721,7 +721,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
               </div>
             </div>
 
-            {/* 🔒 SECURITY: Auto-status indicator - NO MANUAL CONTROLS */}
+            {/*  SECURITY: Auto-status indicator - NO MANUAL CONTROLS */}
             <div style={styles.autoStatusContainer}>
               <div style={styles.statusIndicator}>
                 {isGaming ? (
@@ -781,7 +781,7 @@ export default function QuotaPage({ userInfo, updateUserInfo }) {
           </div>
         </div>
 
-        {/* 🔒 SECURITY: Enhanced Checkout with proper item data */}
+        {/* SECURITY: Enhanced Checkout with proper item data */}
         {showCheckout && selectedPlan && (
           <CheckoutPage
             items={[
