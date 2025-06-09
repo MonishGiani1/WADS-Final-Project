@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
-  // 🔥 DATABASE INTEGRATION: Get user data from localStorage/context
+  // DATABASE INTEGRATION: Get user data from localStorage/context
   const [user, setUser] = useState({
     fullName: "",
     email: "",
@@ -34,7 +34,7 @@ export default function SettingsPage() {
   // State for active section
   const [activeSection, setActiveSection] = useState("profile");
 
-  // 🔥 DATABASE INTEGRATION: Load user data on component mount
+  // DATABASE INTEGRATION: Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
       try {
@@ -119,7 +119,7 @@ export default function SettingsPage() {
     }
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle profile update with real API call
+  // DATABASE INTEGRATION: Handle profile update with real API call
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -265,7 +265,7 @@ export default function SettingsPage() {
     setIsLoading(false);
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle password update with real API call
+  // DATABASE INTEGRATION: Handle password update with real API call
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -342,7 +342,7 @@ export default function SettingsPage() {
     setIsLoading(false);
   };
 
-  // 🔥 DATABASE INTEGRATION: Handle account deletion with real API call
+  // DATABASE INTEGRATION: Handle account deletion with real API call
   const handleDeleteAccount = async () => {
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       try {
